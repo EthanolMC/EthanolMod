@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "rocks.ethanol.ethanolmod.injection.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "MixinGameMenuScreen",
+    "MixinMultiplayerScreen"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
