@@ -1,15 +1,15 @@
 package rocks.ethanol.ethanolmod.networking.impl;
 
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
+import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
 public abstract class EthanolPayload implements CustomPayload, MinecraftWrapper {
 
     protected static Identifier createIdentifier(final String name) {
-        return new Identifier("ethanol", name);
+        return Identifier.of("ethanol", name);
     }
 
     protected static UnsupportedOperationException createWriteOnlyException(final String name) {
