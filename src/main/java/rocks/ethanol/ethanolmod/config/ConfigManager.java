@@ -22,6 +22,14 @@ public class ConfigManager {
 
     private ConfigButtonPosition configButtonPosition = DEFAULT_BUTTON_POSITION;
 
+    public static boolean DEFAULT_DISPLAY_COMMAND_SEND_WARNING = true;
+
+    private boolean displayCommandSendWarning = DEFAULT_DISPLAY_COMMAND_SEND_WARNING;
+
+    public static boolean DEFAULT_DISPLAY_VANISHED_WARNING = true;
+
+    private boolean displayVanishedWarning = DEFAULT_DISPLAY_VANISHED_WARNING;
+
     public ConfigManager(final File configDir) {
         this.configFile = new File(configDir, "ethanolmod.json");
     }
@@ -47,6 +55,12 @@ public class ConfigManager {
                     }
                 }
             }
+            if (configObject.has("displayCommandSendWarning")) {
+                this.displayCommandSendWarning = configObject.get("displayCommandSendWarning").getAsBoolean();
+            }
+            if (configObject.has("displayVanishedWarning")) {
+                this.displayVanishedWarning = configObject.get("displayVanishedWarning").getAsBoolean();
+            }
         }
         jsonReader.close();
         fileReader.close();
@@ -65,6 +79,8 @@ public class ConfigManager {
         }
         configObject.addProperty("commandPrefix", this.commandPrefix);
         configObject.addProperty("configButtonPosition", this.configButtonPosition.getName());
+        configObject.addProperty("displayCommandSendWarning", this.displayCommandSendWarning);
+        configObject.addProperty("displayVanishedWarning", this.displayVanishedWarning);
         printWriter.println(GSON.toJson(configObject));
         printWriter.close();
         fileWriter.close();
@@ -84,6 +100,22 @@ public class ConfigManager {
 
     public void setConfigButtonPosition(final ConfigButtonPosition configButtonPosition) {
         this.configButtonPosition = configButtonPosition;
+    }
+
+    public boolean getDisplayCommandSendWarning() {
+        return this.displayCommandSendWarning;
+    }
+
+    public void setDisplayCommandSendWarning(final boolean displayCommandSendWarning) {
+        this.displayCommandSendWarning = displayCommandSendWarning;
+    }
+
+    public boolean getDisplayVanishedWarning() {
+        return this.displayVanishedWarning;
+    }
+
+    public void setDisplayVanishedWarning(final boolean displayVanishedWarning) {
+        this.displayVanishedWarning = displayVanishedWarning;
     }
 
     public enum ConfigButtonPosition {

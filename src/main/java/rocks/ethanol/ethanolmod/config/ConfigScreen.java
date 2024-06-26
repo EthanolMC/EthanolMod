@@ -1,7 +1,5 @@
 package rocks.ethanol.ethanolmod.config;
 
-import rocks.ethanol.ethanolmod.EthanolMod;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -9,6 +7,9 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import rocks.ethanol.ethanolmod.EthanolMod;
+import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
 public class ConfigScreen extends Screen implements MinecraftWrapper {
 
@@ -40,6 +41,10 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         this.addSelectableChild(this.commandPrefixField);
 
         final int commandPrefixFieldY = this.commandPrefixField.getY() + this.commandPrefixField.getHeight();
+        final int x = this.width / 2 - 90;
+        final int width = 190;
+        final int offsetY = 22;
+        int y = commandPrefixFieldY + 14;
 
         final ButtonWidget configPositionButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
                 "Config Button Position: " + configManager.getConfigButtonPosition().getName()
@@ -54,25 +59,55 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             button.setMessage(Text.of(
                     "Config Button Position: " + configManager.getConfigButtonPosition().getName()
             ));
-        }).position(this.width / 2 - 90, commandPrefixFieldY + 14).width(180).build());
+        }).position(x, y).width(width).build());
+        configPositionButton.setTooltip(Tooltip.of(Text.of("The position of the config button in the game menu screen and the multiplayer screen.")));
+        y += offsetY;
 
-        configPositionButton.setTooltip(Tooltip.of(Text.of("The position of the config button.")));
+        final ButtonWidget displayCommandSendWarningButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
+                "Display Command Send Warning: " + configManager.getDisplayCommandSendWarning()
+        ), (button) -> {
+            configManager.setDisplayCommandSendWarning(!configManager.getDisplayCommandSendWarning());
+            button.setMessage(Text.of(
+                    "Display Command Send Warning: " + configManager.getDisplayCommandSendWarning()
+            ));
+        }).position(x, y).width(width).build());
+        displayCommandSendWarningButton.setTooltip(Tooltip.of(Text.of("This will display a warning when Ethanol is not installed on the server and when you try to send a chat message with the Ethanol prefix.")));
+        y += offsetY;
+
+        final ButtonWidget displayVanishedWarningButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
+                "Display Vanished Warning: " + configManager.getDisplayVanishedWarning()
+        ), (button) -> {
+            configManager.setDisplayVanishedWarning(!configManager.getDisplayVanishedWarning());
+            button.setMessage(Text.of(
+                    "Display Vanished Warning: " + configManager.getDisplayVanishedWarning()
+            ));
+        }).position(x, y).width(width).build());
+        displayVanishedWarningButton.setTooltip(Tooltip.of(Text.of("This will display a warning when you are vanished and when you try to send a chat message.")));
+        y += offsetY * 2;
 
         final ButtonWidget resetConfigButton = this.addDrawableChild(ButtonWidget.builder(Text.of("Reset Config"), (button) -> {
             configManager.setCommandPrefix(ConfigManager.DEFAULT_COMMAND_PREFIX);
             configManager.setConfigButtonPosition(ConfigManager.DEFAULT_BUTTON_POSITION);
+            configManager.setDisplayCommandSendWarning(ConfigManager.DEFAULT_DISPLAY_COMMAND_SEND_WARNING);
+            configManager.setDisplayVanishedWarning(ConfigManager.DEFAULT_DISPLAY_VANISHED_WARNING);
             this.commandPrefixField.setText(ConfigManager.DEFAULT_COMMAND_PREFIX);
             configPositionButton.setMessage(Text.of(
                     "Config Button Position: " + ConfigManager.DEFAULT_BUTTON_POSITION.getName()
             ));
-        }).position(this.width / 2 - 90, commandPrefixFieldY + 38).width(180).build());
-
-        resetConfigButton.setTooltip(Tooltip.of(Text.of("Reset the config to default values.")));
+            displayCommandSendWarningButton.setMessage(Text.of(
+                    "Display Command Send Warning: " + ConfigManager.DEFAULT_DISPLAY_COMMAND_SEND_WARNING
+            ));
+            displayVanishedWarningButton.setMessage(Text.of(
+                    "Display Vanished Warning: " + ConfigManager.DEFAULT_DISPLAY_VANISHED_WARNING
+            ));
+        }).position(x, y).width(width).build());
+        resetConfigButton.setTooltip(Tooltip.of(Text.of(Formatting.RED + "WARNING: This will reset all of your settings to the default values.")));
+        y += offsetY;
 
         this.addDrawableChild(
                 ButtonWidget
                         .builder(ScreenTexts.BACK, (button) -> this.close())
-                        .position(this.width / 2 - 75, commandPrefixFieldY + 86)
+                        .position(this.width / 2 - 75, y + offsetY)
                         .build()
         );
     }
