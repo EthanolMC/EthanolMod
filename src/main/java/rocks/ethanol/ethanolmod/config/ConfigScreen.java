@@ -41,7 +41,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         this.addSelectableChild(this.commandPrefixField);
 
         final int commandPrefixFieldY = this.commandPrefixField.getY() + this.commandPrefixField.getHeight();
-        final int x = this.width / 2 - 90;
+        final int x = this.width / 2 - 95;
         final int width = 190;
         final int offsetY = 22;
         int y = commandPrefixFieldY + 14;
@@ -107,7 +107,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         this.addDrawableChild(
                 ButtonWidget
                         .builder(ScreenTexts.BACK, (button) -> this.close())
-                        .position(this.width / 2 - 75, y + offsetY)
+                        .position(this.width / 2 - 75, y + 2)
                         .build()
         );
     }
