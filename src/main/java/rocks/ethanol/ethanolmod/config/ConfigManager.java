@@ -18,7 +18,7 @@ public class ConfigManager {
 
     private String commandPrefix = DEFAULT_COMMAND_PREFIX;
 
-    public static final ConfigButtonPosition DEFAULT_BUTTON_POSITION = ConfigButtonPosition.TOP_LEFT;
+    public static final ConfigButtonPosition DEFAULT_BUTTON_POSITION = ConfigButtonPosition.BOTTOM_LEFT;
 
     private ConfigButtonPosition configButtonPosition = DEFAULT_BUTTON_POSITION;
 
@@ -91,8 +91,7 @@ public class ConfigManager {
         TOP_LEFT("Top Left"),
         TOP_RIGHT("Top Right"),
         BOTTOM_LEFT("Bottom Left"),
-        BOTTOM_RIGHT("Bottom Right"),
-        ;
+        BOTTOM_RIGHT("Bottom Right");
 
         private final String name;
 
