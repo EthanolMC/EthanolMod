@@ -1,17 +1,20 @@
 package rocks.ethanol.ethanolmod.eventhandler.impl;
 
-import rocks.ethanol.ethanolmod.EthanolMod;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import rocks.ethanol.ethanolmod.EthanolMod;
 
 public class DisconnectEventHandler implements ClientPlayConnectionEvents.Disconnect {
 
     @Override
     public void onPlayDisconnect(final ClientPlayNetworkHandler handler, final MinecraftClient client) {
-        EthanolMod.getInstance().setInstalled(false);
-        EthanolMod.getInstance().setSend(false);
-        EthanolMod.getInstance().setVanished(false);
+        final EthanolMod ethanolMod = EthanolMod.getInstance();
+        ethanolMod.setInstalled(false);
+        ethanolMod.setSend(false);
+        ethanolMod.setVanished(false);
+        ethanolMod.resetCommandDispatcher();
+        ethanolMod.getPendingRequests().clear();
     }
 
 }

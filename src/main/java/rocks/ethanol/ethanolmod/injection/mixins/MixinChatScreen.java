@@ -41,16 +41,17 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
         final int color = 0xFF0000;
         final boolean shadow = true;
         if (text.isEmpty()) return;
-        final ConfigManager configManager = EthanolMod.getInstance().getConfigManager();
+        final EthanolMod ethanolMod = EthanolMod.getInstance();
+        final ConfigManager configManager = ethanolMod.getConfigManager();
         if (text.startsWith(configManager.getCommandPrefix())) {
-            if (!EthanolMod.getInstance().isInstalled()) {
+            if (!ethanolMod.isInstalled()) {
                 if (configManager.getDisplayCommandSendWarning()) {
                     context.drawText(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_1, x, y, color, shadow);
                     y += textRenderer.fontHeight;
                     context.drawText(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_2, x, y, color, shadow);
                 }
             }
-        } else if (EthanolMod.getInstance().isVanished()) {
+        } else if (ethanolMod.isVanished()) {
             if (configManager.getDisplayVanishedWarning()) {
                 context.drawText(textRenderer, ETHANOL_VANISHED_WARNING_1, x, y, color, shadow);
                 y += textRenderer.fontHeight;

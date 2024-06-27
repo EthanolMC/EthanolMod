@@ -11,6 +11,7 @@ import net.minecraft.util.Formatting;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
+// TODO: Add discord and github button
 public class ConfigScreen extends Screen implements MinecraftWrapper {
 
     private final Screen parentScreen;
