@@ -14,9 +14,11 @@ import java.util.concurrent.CompletableFuture;
 
 public class PlayerLookupArgumentType implements ArgumentType<String>, MinecraftWrapper {
 
+    private final boolean singleOnly;
     private final boolean original;
 
-    public PlayerLookupArgumentType(final boolean original) {
+    public PlayerLookupArgumentType(final boolean singleOnly, final boolean original) {
+        this.singleOnly = singleOnly;
         this.original = original;
     }
 
@@ -36,6 +38,10 @@ public class PlayerLookupArgumentType implements ArgumentType<String>, Minecraft
         return string;
     }
 
+    public final boolean isSingleOnly() {
+        return this.singleOnly;
+    }
+
     public final boolean isOriginal() {
         return this.original;
     }
@@ -44,7 +50,11 @@ public class PlayerLookupArgumentType implements ArgumentType<String>, Minecraft
         final char[] chars = string.toCharArray();
         final boolean single = chars.length == 0 || chars[0] != '*';
 
-        if (single) return;
+        if (single) {
+            return;
+        } else if (this.singleOnly) {
+            throw CommandExceptions.EXPECTED_SINGLE_PLAYER.create();
+        }
 
         final boolean includeEthanolUsers = chars.length != 1 && chars[1] == '*';
 
