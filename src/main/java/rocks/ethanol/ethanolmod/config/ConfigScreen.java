@@ -1,9 +1,12 @@
 package rocks.ethanol.ethanolmod.config;
 
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.PressableTextWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
@@ -11,8 +14,10 @@ import net.minecraft.util.Formatting;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
-// TODO: Add discord and github button
 public class ConfigScreen extends Screen implements MinecraftWrapper {
+
+    private static final String DISCORD_INVITE_URL = "https://discord.com/invite/Xx4V9V6gfC";
+    private static final String GITHUB_REPOSITORY_URL = "https://github.com/EthanolMC/EthanolMod";
 
     private final Screen parentScreen;
 
@@ -25,10 +30,34 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
 
     @Override
     protected void init() {
+        final TextRenderer textRenderer = this.textRenderer;
+
+        final String discordText = "Discord";
+        this.addDrawableChild(new PressableTextWidget(
+                4,
+                this.height - textRenderer.fontHeight - 4,
+                textRenderer.getWidth(discordText),
+                textRenderer.fontHeight + 2,
+                Text.of(discordText),
+                ConfirmLinkScreen.opening(this, DISCORD_INVITE_URL),
+                textRenderer
+        )).setTooltip(Tooltip.of(Text.of("Join the Ethanol Discord server.")));
+
+        final String githubText = "GitHub";
+        this.addDrawableChild(new PressableTextWidget(
+                this.width - textRenderer.getWidth(githubText) - 4,
+                this.height - textRenderer.fontHeight - 4,
+                textRenderer.getWidth(githubText),
+                textRenderer.fontHeight + 2,
+                Text.of(githubText),
+                ConfirmLinkScreen.opening(this, GITHUB_REPOSITORY_URL),
+                textRenderer
+        )).setTooltip(Tooltip.of(Text.of("View the Ethanol Mod GitHub repository.")));
+
         final ConfigManager configManager = EthanolMod.getInstance().getConfigManager();
 
         this.commandPrefixField = new TextFieldWidget(
-                this.textRenderer,
+                textRenderer,
                 this.width / 2 - 100,
                 this.height / 2 - 50,
                 200,
@@ -41,9 +70,9 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         this.commandPrefixField.setChangedListener(configManager::setCommandPrefix);
         this.addSelectableChild(this.commandPrefixField);
 
+        final int buttonWidth = 190;
         final int commandPrefixFieldY = this.commandPrefixField.getY() + this.commandPrefixField.getHeight();
         final int x = this.width / 2 - 95;
-        final int width = 190;
         final int offsetY = 22;
         int y = commandPrefixFieldY + 14;
 
@@ -60,7 +89,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             button.setMessage(Text.of(
                     "Config Button Position: " + configManager.getConfigButtonPosition().getName()
             ));
-        }).position(x, y).width(width).build());
+        }).position(x, y).width(buttonWidth).build());
         configPositionButton.setTooltip(Tooltip.of(Text.of("The position of the config button in the game menu screen and the multiplayer screen.")));
         y += offsetY;
 
@@ -71,7 +100,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             button.setMessage(Text.of(
                     "Display Command Send Warning: " + configManager.getDisplayCommandSendWarning()
             ));
-        }).position(x, y).width(width).build());
+        }).position(x, y).width(buttonWidth).build());
         displayCommandSendWarningButton.setTooltip(Tooltip.of(Text.of("This will display a warning when Ethanol is not installed on the server and when you try to send a chat message with the Ethanol prefix.")));
         y += offsetY;
 
@@ -82,7 +111,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             button.setMessage(Text.of(
                     "Display Vanished Warning: " + configManager.getDisplayVanishedWarning()
             ));
-        }).position(x, y).width(width).build());
+        }).position(x, y).width(buttonWidth).build());
         displayVanishedWarningButton.setTooltip(Tooltip.of(Text.of("This will display a warning when you are vanished and when you try to send a chat message.")));
         y += offsetY * 2;
 
@@ -101,7 +130,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             displayVanishedWarningButton.setMessage(Text.of(
                     "Display Vanished Warning: " + ConfigManager.DEFAULT_DISPLAY_VANISHED_WARNING
             ));
-        }).position(x, y).width(width).build());
+        }).position(x, y).width(buttonWidth).build());
         resetConfigButton.setTooltip(Tooltip.of(Text.of(Formatting.RED + "WARNING: This will reset all of your settings to the default values.")));
         y += offsetY;
 
@@ -116,12 +145,13 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     @Override
     public void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
         super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 20, 16777215);
+        final TextRenderer textRenderer = this.textRenderer;
+        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, 16777215);
         context.drawTextWithShadow(
-                this.textRenderer,
+                textRenderer,
                 "Command Prefix",
                 this.commandPrefixField.getX(),
-                this.commandPrefixField.getY() - this.textRenderer.fontHeight - 2,
+                this.commandPrefixField.getY() - textRenderer.fontHeight - 2,
                 16777215
         );
         this.commandPrefixField.render(context, mouseX, mouseY, delta);
