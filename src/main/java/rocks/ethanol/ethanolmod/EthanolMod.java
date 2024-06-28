@@ -131,10 +131,6 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
         return this.commandSecret;
     }
 
-    public ArgumentTypeRegistry getArgumentTypeRegistry() {
-        return this.argumentTypeRegistry;
-    }
-
     public CommandDispatcher<CommandSource> getCommandDispatcher() {
         return this.commandDispatcher;
     }

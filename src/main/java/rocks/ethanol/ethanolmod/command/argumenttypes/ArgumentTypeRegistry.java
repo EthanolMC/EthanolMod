@@ -93,16 +93,12 @@ public class ArgumentTypeRegistry {
                 buf.writeBytes(optionBytes);
             }
         }, (type) -> type));
-        this.register(ArgumentSerializer.of(PlayerArgumentType.class, "player", (buf) -> {
-            return new PlayerArgumentType(buf.readBoolean());
-        }, (type, buf) -> {
-            buf.writeBoolean(type.isOriginal());
-        }, (type) -> new PlayerArgumentType(type.isOriginal())));
         this.register(ArgumentSerializer.of(PlayerLookupArgumentType.class, "player_lookup", (buf) -> {
-            return new PlayerLookupArgumentType(buf.readBoolean());
+            return new PlayerLookupArgumentType(buf.readBoolean(), buf.readBoolean());
         }, (type, buf) -> {
+            buf.writeBoolean(type.isSingleOnly());
             buf.writeBoolean(type.isOriginal());
-        }, (type) -> new PlayerLookupArgumentType(type.isOriginal())));
+        }, (type) -> new PlayerLookupArgumentType(type.isSingleOnly(), type.isOriginal())));
         this.register(ArgumentSerializer.of(PluginArgumentType.class, "plugin", PluginArgumentType::create, (type) -> PluginArgumentType.create()));
         this.register(ArgumentSerializer.of(UUIDArgumentType.class, "uuid", UUIDArgumentType::create, (type) -> UUIDArgumentType.create()));
         this.register(ArgumentSerializer.of(WorldArgumentType.class, "world", WorldArgumentType::create, (type) -> WorldArgumentType.create()));
