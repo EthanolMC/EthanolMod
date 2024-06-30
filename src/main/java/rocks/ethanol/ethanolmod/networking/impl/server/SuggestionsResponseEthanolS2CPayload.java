@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class SuggestionsResponseEthanolS2CPayload extends EthanolPayload {
 
-    public static final Id<SuggestionsResponseEthanolS2CPayload> ID = new Id<>(createIdentifier("suggestions_response"));
+    public static final Id<SuggestionsResponseEthanolS2CPayload> ID = new Id<>(createIdentifier("suggest"));
 
     public static final PacketCodec<PacketByteBuf, SuggestionsResponseEthanolS2CPayload> CODEC = CustomPayload.codecOf((value, buf) -> {
         throw createReadOnlyException("SuggestionsResponseEthanolS2CPayload");

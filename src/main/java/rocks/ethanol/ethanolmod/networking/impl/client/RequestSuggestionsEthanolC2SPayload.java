@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 
 public class RequestSuggestionsEthanolC2SPayload extends EthanolPayload {
 
-    public static final Id<RequestSuggestionsEthanolC2SPayload> ID = new Id<>(createIdentifier("request_suggestions"));
+    public static final Id<RequestSuggestionsEthanolC2SPayload> ID = new Id<>(createIdentifier("suggest"));
 
     public static final PacketCodec<PacketByteBuf, RequestSuggestionsEthanolC2SPayload> CODEC = CustomPayload.codecOf(
             RequestSuggestionsEthanolC2SPayload::write,
