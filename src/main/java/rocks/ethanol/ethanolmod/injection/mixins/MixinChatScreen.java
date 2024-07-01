@@ -11,14 +11,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import rocks.ethanol.ethanolmod.EthanolMod;
-import rocks.ethanol.ethanolmod.config.ConfigManager;
+import rocks.ethanol.ethanolmod.config.Configuration;
 import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
 @Mixin(ChatScreen.class)
 public abstract class MixinChatScreen implements MinecraftWrapper {
-
-    @Shadow
-    protected TextFieldWidget chatField;
 
     @Unique
     private static final String ETHANOL_NOT_INSTALLED_WARNING_1 = "Ethanol is not installed on the server.";
@@ -32,8 +29,11 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
     @Unique
     private static final String ETHANOL_VANISHED_WARNING_2 = "Are you sure you want to send this message in the chat?";
 
+    @Shadow
+    protected TextFieldWidget chatField;
+
     @Inject(method = "render", at = @At(value = "RETURN"))
-    public void displayEthanolModWarnings(final DrawContext context, final int mouseX, final int mouseY, final float delta, final CallbackInfo ci) {
+    public final void displayEthanolModWarnings(final DrawContext context, final int mouseX, final int mouseY, final float delta, final CallbackInfo info) {
         final String text = this.chatField.getText();
         final TextRenderer textRenderer = this.mc.textRenderer;
         final int x = this.chatField.getX() + 2;
@@ -42,17 +42,17 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
         final boolean shadow = true;
         if (text.isEmpty()) return;
         final EthanolMod ethanolMod = EthanolMod.getInstance();
-        final ConfigManager configManager = ethanolMod.getConfigManager();
-        if (text.startsWith(configManager.getCommandPrefix())) {
+        final Configuration configuration = ethanolMod.getConfiguration();
+        if (text.startsWith(configuration.getCommandPrefix())) {
             if (!ethanolMod.isInstalled()) {
-                if (configManager.getDisplayCommandSendWarning()) {
+                if (configuration.getDisplayCommandSendWarning()) {
                     context.drawText(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_1, x, y, color, shadow);
                     y += textRenderer.fontHeight;
                     context.drawText(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_2, x, y, color, shadow);
                 }
             }
         } else if (ethanolMod.isVanished()) {
-            if (configManager.getDisplayVanishedWarning()) {
+            if (configuration.getDisplayVanishedWarning()) {
                 context.drawText(textRenderer, ETHANOL_VANISHED_WARNING_1, x, y, color, shadow);
                 y += textRenderer.fontHeight;
                 context.drawText(textRenderer, ETHANOL_VANISHED_WARNING_2, x, y, color, shadow);

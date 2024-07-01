@@ -11,7 +11,7 @@ import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrapper {
 
     @Override
-    public void onHudRender(final DrawContext drawContext, final RenderTickCounter tickCounter) {
+    public final void onHudRender(final DrawContext drawContext, final RenderTickCounter tickCounter) {
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         if (ethanolMod.isInstalled()) {
             final TextRenderer textRenderer = this.mc.textRenderer;

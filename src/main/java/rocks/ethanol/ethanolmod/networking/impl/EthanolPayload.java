@@ -6,24 +6,31 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
-public abstract class EthanolPayload implements CustomPayload, MinecraftWrapper {
+public interface EthanolPayload extends CustomPayload, MinecraftWrapper {
 
-    protected static Identifier createIdentifier(final String name) {
+    void write(final PacketByteBuf buf);
+
+    static Identifier createIdentifier(final String name) {
         return Identifier.of("ethanol", name);
     }
 
-    protected static UnsupportedOperationException createWriteOnlyException(final String name) {
-        return new UnsupportedOperationException(name + " is a write-only packet!");
+    static UnsupportedOperationException createWriteOnlyException(final Class<?> clazz) {
+        return EthanolPayload.createWriteOnlyException(clazz.getSimpleName());
     }
 
-    protected void write(final PacketByteBuf buf) {
+    static UnsupportedOperationException createWriteOnlyException(final String name) {
+        return new UnsupportedOperationException(name.concat("is a write-only packet!"));
     }
 
-    protected static UnsupportedOperationException createReadOnlyException(final String name) {
-        return new UnsupportedOperationException(name + " is a read-only packet!");
+    static UnsupportedOperationException createReadOnlyException(final Class<?> clazz) {
+        return EthanolPayload.createReadOnlyException(clazz.getSimpleName());
     }
 
-    protected static byte[] readBuffer(final ByteBuf buf) {
+    static UnsupportedOperationException createReadOnlyException(final String name) {
+        return new UnsupportedOperationException(name.concat(" is a read-only packet!"));
+    }
+
+    static byte[] readBuffer(final ByteBuf buf) {
         final byte[] bytes = new byte[buf.readableBytes()];
         buf.readBytes(bytes);
         return bytes;

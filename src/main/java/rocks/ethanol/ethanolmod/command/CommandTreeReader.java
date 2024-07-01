@@ -22,17 +22,12 @@ import java.util.function.Function;
 
 public class CommandTreeReader {
 
-    private final int rootSize;
-    private final List<CommandTreeReader.CommandNodeData> nodes;
+    public static RootCommandNode<CommandSource> read(final ByteBuf in, final ArgumentTypeRegistry argumentTypeRegistry) {
+        final List<CommandTreeReader.CommandNodeData> nodes = CommandTreeReader.readList(in, buf2 -> CommandTreeReader.readCommandNode(argumentTypeRegistry, in));
+        final int rootSize = in.readInt();
+        CommandTreeReader.validate(nodes);
 
-    public CommandTreeReader(final ArgumentTypeRegistry argumentTypeRegistry, final ByteBuf buf) {
-        this.nodes = readList(buf, buf2 -> CommandTreeReader.readCommandNode(argumentTypeRegistry, buf));
-        this.rootSize = buf.readInt();
-        CommandTreeReader.validate(this.nodes);
-    }
-
-    public final RootCommandNode<CommandSource> getCommandTree(final ArgumentTypeRegistry argumentTypeRegistry) {
-        return (RootCommandNode<CommandSource>) new CommandTreeReader.CommandTree(argumentTypeRegistry, this.nodes).getNode(this.rootSize);
+        return (RootCommandNode<CommandSource>) new CommandTreeReader.CommandTree(argumentTypeRegistry, nodes).getNode(rootSize);
     }
 
     private static void validate(final List<CommandTreeReader.CommandNodeData> nodeData, final BiPredicate<CommandTreeReader.CommandNodeData, IntSet> validator) {

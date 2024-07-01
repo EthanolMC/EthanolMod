@@ -6,89 +6,87 @@ import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.CommandSource;
-import net.minecraft.network.PacketByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rocks.ethanol.ethanolmod.command.CommandTreeReader;
-import rocks.ethanol.ethanolmod.command.argumenttypes.ArgumentTypeRegistry;
-import rocks.ethanol.ethanolmod.config.ConfigManager;
+import rocks.ethanol.ethanolmod.config.Configuration;
 import rocks.ethanol.ethanolmod.eventhandler.EventInitializer;
 import rocks.ethanol.ethanolmod.networking.PayloadInitializer;
 import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
 
+    public static final String NAME = "Ethanol Mod";
+    public static final Logger LOGGER = LoggerFactory.getLogger(EthanolMod.class);
+
     private static EthanolMod instance;
 
-    private String name, id;
-    private Logger logger;
-    private ConfigManager configManager;
+    private Configuration configuration;
+    private boolean installed;
+    private boolean send;
+    private boolean vanished;
+    private long showStart;
 
-    private boolean installed = false, send = false, vanished = false;
-    private long showStart = 0L;
-
-    private final CommandSource commandSource = new ClientCommandSource(null, MinecraftClient.getInstance());
-    private final String commandSecret = UUID.randomUUID().toString();
-    private final ArgumentTypeRegistry argumentTypeRegistry = new ArgumentTypeRegistry();
-    private final Map<Long, CompletableFuture<Suggestions>> pendingRequests = new HashMap<>();
-
+    private final CommandSource commandSource;
+    private final Map<Long, CompletableFuture<Suggestions>> pendingRequests;
     private CommandDispatcher<CommandSource> commandDispatcher;
+
+    public EthanolMod() {
+        this.installed = false;
+        this.send = false;
+        this.vanished = false;
+        this.showStart = 0L;
+        this.commandSource = new ClientCommandSource(null, MinecraftClient.getInstance());
+        this.pendingRequests = new HashMap<>();
+    }
 
     @Override
     public void onInitializeClient() {
-        instance = this;
+        EthanolMod.instance = this;
 
-        this.name = "Ethanol Mod";
-        this.id = this.name.toLowerCase().replace(" ", "");
-        this.logger = LoggerFactory.getLogger(this.name);
+        {
+            final Path configDir = this.mc.runDirectory.toPath().resolve("config");
+            if (!Files.exists(configDir)) {
+                try {
+                    Files.createDirectories(configDir);
+                } catch (final IOException exception) {
+                    throw new RuntimeException(exception);
+                }
+            }
 
-        final File configDir = new File(this.mc.runDirectory, "config");
-        if (!configDir.exists()) configDir.mkdirs();
-
-        this.configManager = new ConfigManager(configDir);
+            this.configuration = new Configuration(configDir.resolve("ethanolmod.json"));
+        }
 
         try {
-            this.configManager.load();
-        } catch (final Exception e) {
-            this.logger.error("Failed to load config!", e);
+            this.configuration.load();
+        } catch (final IOException exception) {
+            EthanolMod.LOGGER.error("Failed to load config!", exception);
         }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                this.configManager.save();
-            } catch (final Exception e) {
-                this.logger.error("Failed to save config!", e);
+                this.configuration.save();
+            } catch (final Exception exception) {
+                EthanolMod.LOGGER.error("Failed to save config!", exception);
             }
         }));
 
-        EventInitializer.onInit();
-        PayloadInitializer.onInit();
+        EventInitializer.init();
+        PayloadInitializer.init();
     }
 
     public static EthanolMod getInstance() {
         return instance;
     }
 
-    public String getName() {
-        return this.name;
-    }
-
-    public String getId() {
-        return this.id;
-    }
-
-    public Logger getLogger() {
-        return this.logger;
-    }
-
-    public ConfigManager getConfigManager() {
-        return this.configManager;
+    public Configuration getConfiguration() {
+        return this.configuration;
     }
 
     public boolean isInstalled() {
@@ -127,16 +125,12 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
         return this.commandSource;
     }
 
-    public String getCommandSecret() {
-        return this.commandSecret;
-    }
-
     public CommandDispatcher<CommandSource> getCommandDispatcher() {
         return this.commandDispatcher;
     }
 
-    public void updateCommandDispatcher(final PacketByteBuf buf) {
-        this.commandDispatcher = new CommandDispatcher<>(new CommandTreeReader(this.argumentTypeRegistry, buf).getCommandTree(this.argumentTypeRegistry));
+    public void updateCommandDispatcher(final CommandDispatcher<CommandSource> dispatcher) {
+        this.commandDispatcher = dispatcher;
     }
 
     public void resetCommandDispatcher() {
