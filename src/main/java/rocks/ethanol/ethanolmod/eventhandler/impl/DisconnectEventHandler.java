@@ -8,7 +8,7 @@ import rocks.ethanol.ethanolmod.EthanolMod;
 public class DisconnectEventHandler implements ClientPlayConnectionEvents.Disconnect {
 
     @Override
-    public void onPlayDisconnect(final ClientPlayNetworkHandler handler, final MinecraftClient client) {
+    public final void onPlayDisconnect(final ClientPlayNetworkHandler handler, final MinecraftClient client) {
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         ethanolMod.setInstalled(false);
         ethanolMod.setSend(false);

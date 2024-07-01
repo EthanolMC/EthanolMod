@@ -1,4 +1,4 @@
-package rocks.ethanol.ethanolmod.networking.impl.server;
+package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
@@ -7,35 +7,29 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.text.Text;
-import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
-public class SuggestionsResponseEthanolS2CPayload extends EthanolPayload {
+public class ClientboundSuggestionsResponsePayload implements EthanolPayload {
 
-    public static final Id<SuggestionsResponseEthanolS2CPayload> ID = new Id<>(createIdentifier("suggest"));
+    public static final Id<ClientboundSuggestionsResponsePayload> ID = new Id<>(EthanolPayload.createIdentifier("suggest"));
 
-    public static final PacketCodec<PacketByteBuf, SuggestionsResponseEthanolS2CPayload> CODEC = CustomPayload.codecOf((value, buf) -> {
-        throw createReadOnlyException("SuggestionsResponseEthanolS2CPayload");
-    }, SuggestionsResponseEthanolS2CPayload::new);
+    public static final PacketCodec<PacketByteBuf, ClientboundSuggestionsResponsePayload> CODEC = CustomPayload.codecOf(ClientboundSuggestionsResponsePayload::write, ClientboundSuggestionsResponsePayload::new);
 
-    public SuggestionsResponseEthanolS2CPayload(final PacketByteBuf buf) {
-        final Map<Long, CompletableFuture<Suggestions>> pendingRequests = EthanolMod.getInstance().getPendingRequests();
-        final long nonce = buf.readLong();
-        final CompletableFuture<Suggestions> future = pendingRequests.get(nonce);
-        if (future == null) {
-            return;
-        }
-        pendingRequests.remove(nonce);
+    private final long nonce;
+    private final Suggestions suggestions;
+
+    public ClientboundSuggestionsResponsePayload(final PacketByteBuf buf) {
+        this.nonce = buf.readLong();
+
         if (!buf.readBoolean()) {
-            future.completeExceptionally(new IllegalStateException("Server did not provide suggestions"));
+            this.suggestions = null;
             return;
         }
+
         final StringRange range = StringRange.between(buf.readInt(), buf.readInt());
         final int length = buf.readInt();
         final List<Suggestion> suggestions = new ArrayList<>();
@@ -55,11 +49,25 @@ public class SuggestionsResponseEthanolS2CPayload extends EthanolPayload {
             }
             suggestions.add(new Suggestion(range, text, Text.of(tooltip)));
         }
-        future.complete(new Suggestions(range, suggestions));
+
+        this.suggestions = new Suggestions(range, suggestions);
     }
 
     @Override
-    public Id<SuggestionsResponseEthanolS2CPayload> getId() {
+    public final void write(final PacketByteBuf buf) {
+        throw EthanolPayload.createReadOnlyException(ClientboundSuggestionsResponsePayload.class);
+    }
+
+    public final long getNonce() {
+        return this.nonce;
+    }
+
+    public final Suggestions getSuggestions() {
+        return this.suggestions;
+    }
+
+    @Override
+    public final Id<ClientboundSuggestionsResponsePayload> getId() {
         return ID;
     }
 

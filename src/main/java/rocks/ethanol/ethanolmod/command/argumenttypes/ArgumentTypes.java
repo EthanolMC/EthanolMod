@@ -5,7 +5,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import rocks.ethanol.ethanolmod.EthanolMod;
-import rocks.ethanol.ethanolmod.networking.impl.client.RequestSuggestionsEthanolC2SPayload;
+import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundRequestSuggestionsPayload;
 import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
 
 import java.util.Collection;
@@ -38,8 +38,8 @@ public interface ArgumentTypes extends MinecraftWrapper {
         final CompletableFuture<Suggestions> future = new CompletableFuture<>();
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         ethanolMod.getPendingRequests().put(nonce, future);
-        final int partialCommandOffset = ethanolMod.getConfigManager().getCommandPrefix().length();
-        mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new RequestSuggestionsEthanolC2SPayload(nonce, partialCommandOffset, builder.getInput())));
+        final int partialCommandOffset = ethanolMod.getConfiguration().getCommandPrefix().length();
+        mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundRequestSuggestionsPayload(nonce, partialCommandOffset, builder.getInput())));
         return future;
     }
 

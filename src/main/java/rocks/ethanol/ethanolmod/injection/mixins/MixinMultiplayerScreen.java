@@ -17,7 +17,7 @@ public abstract class MixinMultiplayerScreen extends Screen {
     }
 
     @Inject(method = "init", at = @At("RETURN"))
-    private void addEthanolModButton(final CallbackInfo ci) {
+    private void addEthanolModButton(final CallbackInfo info) {
         this.addDrawableChild(ConfigScreen.createButton((MultiplayerScreen) (Object) this));
     }
 

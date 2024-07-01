@@ -11,7 +11,7 @@ import rocks.ethanol.ethanolmod.eventhandler.impl.WorldTickEventHandler;
 
 public class EventInitializer {
 
-    public static void onInit() {
+    public static void init() {
         ClientPlayConnectionEvents.DISCONNECT.register(new DisconnectEventHandler());
         HudRenderCallback.EVENT.register(new HudRenderEventHandler());
         ClientSendMessageEvents.ALLOW_CHAT.register(new AllowChatEventHandler());

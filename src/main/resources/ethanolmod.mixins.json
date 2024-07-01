@@ -4,12 +4,11 @@
   "package": "rocks.ethanol.ethanolmod.injection.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "MixinChatInputSuggestor",
+    "MixinChatInputSuggester",
     "MixinChatScreen",
     "MixinClientPlayNetworkHandler",
     "MixinGameMenuScreen",
-    "MixinMultiplayerScreen",
-    "MixinScreen"
+    "MixinMultiplayerScreen"
   ],
   "injectors": {
     "defaultRequire": 1
