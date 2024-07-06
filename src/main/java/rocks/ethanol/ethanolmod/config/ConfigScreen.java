@@ -60,7 +60,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         this.commandPrefixField = new TextFieldWidget(
                 textRenderer,
                 this.width / 2 - 100,
-                this.height / 2 - 50,
+                this.height / 2 - 70,
                 200,
                 20,
                 Text.of("Command Prefix")
@@ -168,7 +168,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     public void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
         super.render(context, mouseX, mouseY, delta);
         final TextRenderer textRenderer = this.textRenderer;
-        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, 16777215);
+        context.drawCenteredTextWithShadow(textRenderer, Formatting.UNDERLINE + this.title.getString(), this.width / 2, 20, 16777215);
         context.drawTextWithShadow(
                 textRenderer,
                 "Command Prefix",
