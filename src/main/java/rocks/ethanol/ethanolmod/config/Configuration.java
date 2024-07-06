@@ -1,11 +1,6 @@
 package rocks.ethanol.ethanolmod.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
+import com.google.gson.*;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -21,12 +16,14 @@ public class Configuration {
     public static final ConfigButtonPosition DEFAULT_BUTTON_POSITION = ConfigButtonPosition.BOTTOM_LEFT;
     public static final boolean DEFAULT_DISPLAY_COMMAND_SEND_WARNING = true;
     public static final boolean DEFAULT_DISPLAY_VANISHED_WARNING = true;
+    public static final boolean DEFAULT_INFINITE_COMMAND_INPUT_LENGTH = true;
 
     private final Path file;
     private String commandPrefix;
     private ConfigButtonPosition configButtonPosition;
     private boolean displayCommandSendWarning;
     private boolean displayVanishedWarning;
+    private boolean infiniteCommandInputLength;
 
     public Configuration(final Path file) {
         this.file = file;
@@ -34,13 +31,13 @@ public class Configuration {
         this.configButtonPosition = Configuration.DEFAULT_BUTTON_POSITION;
         this.displayCommandSendWarning = Configuration.DEFAULT_DISPLAY_COMMAND_SEND_WARNING;
         this.displayVanishedWarning = Configuration.DEFAULT_DISPLAY_VANISHED_WARNING;
+        this.infiniteCommandInputLength = Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH;
     }
 
     public final void load() throws IOException {
         if (!Files.exists(this.file)) {
             return;
         }
-
         try (final Reader reader = Files.newBufferedReader(this.file)) {
             final JsonElement jsonElement = JsonParser.parseReader(reader);
             if (!jsonElement.isJsonNull()) {
@@ -63,6 +60,9 @@ public class Configuration {
                 if (configObject.has("displayVanishedWarning")) {
                     this.displayVanishedWarning = configObject.get("displayVanishedWarning").getAsBoolean();
                 }
+                if (configObject.has("infiniteCommandInputLength")) {
+                    this.infiniteCommandInputLength = configObject.get("infiniteCommandInputLength").getAsBoolean();
+                }
             }
         }
     }
@@ -76,6 +76,7 @@ public class Configuration {
         configObject.addProperty("configButtonPosition", this.configButtonPosition.getName());
         configObject.addProperty("displayCommandSendWarning", this.displayCommandSendWarning);
         configObject.addProperty("displayVanishedWarning", this.displayVanishedWarning);
+        configObject.addProperty("infiniteCommandInputLength", this.infiniteCommandInputLength);
         Files.writeString(this.file, Configuration.GSON.toJson(configObject), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
@@ -109,6 +110,14 @@ public class Configuration {
 
     public final void setDisplayVanishedWarning(final boolean displayVanishedWarning) {
         this.displayVanishedWarning = displayVanishedWarning;
+    }
+
+    public final boolean getInfiniteCommandInputLength() {
+        return this.infiniteCommandInputLength;
+    }
+
+    public final void setInfiniteCommandInputLength(final boolean infiniteCommandInputLength) {
+        this.infiniteCommandInputLength = infiniteCommandInputLength;
     }
 
     public enum ConfigButtonPosition {

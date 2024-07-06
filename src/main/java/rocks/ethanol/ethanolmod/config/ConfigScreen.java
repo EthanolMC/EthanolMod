@@ -68,7 +68,13 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         this.commandPrefixField.setText(configuration.getCommandPrefix());
         this.commandPrefixField.setTooltip(Tooltip.of(Text.of("The prefix to use Ethanol commands.")));
         this.commandPrefixField.setMaxLength(25);
-        this.commandPrefixField.setChangedListener(configuration::setCommandPrefix);
+        this.commandPrefixField.setChangedListener(text -> {
+            if (text.startsWith("/")) {
+                text = Configuration.DEFAULT_COMMAND_PREFIX;
+                this.commandPrefixField.setText(text);
+            }
+            configuration.setCommandPrefix(text);
+        });
         this.addSelectableChild(this.commandPrefixField);
 
         final int buttonWidth = 190;
@@ -114,6 +120,17 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             ));
         }).position(x, y).width(buttonWidth).build());
         displayVanishedWarningButton.setTooltip(Tooltip.of(Text.of("This will display a warning when you are vanished and when you try to send a chat message.")));
+        y += offsetY;
+
+        final ButtonWidget infiniteCommandInputLengthButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
+                "Infinite Command Input Length: ".concat(String.valueOf(configuration.getInfiniteCommandInputLength()))
+        ), (button) -> {
+            configuration.setInfiniteCommandInputLength(!configuration.getInfiniteCommandInputLength());
+            button.setMessage(Text.of(
+                    "Infinite Command Input Length: ".concat(String.valueOf(configuration.getInfiniteCommandInputLength()))
+            ));
+        }).position(x, y).width(buttonWidth).build());
+        infiniteCommandInputLengthButton.setTooltip(Tooltip.of(Text.of("This will allow you to type an infinite amount of characters in the chat input field when it starts with the Ethanol prefix and when ethanol is installed on the server.")));
         y += offsetY * 2;
 
         final ButtonWidget resetConfigButton = this.addDrawableChild(ButtonWidget.builder(Text.of("Reset Config"), (button) -> {
@@ -121,6 +138,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             configuration.setConfigButtonPosition(Configuration.DEFAULT_BUTTON_POSITION);
             configuration.setDisplayCommandSendWarning(Configuration.DEFAULT_DISPLAY_COMMAND_SEND_WARNING);
             configuration.setDisplayVanishedWarning(Configuration.DEFAULT_DISPLAY_VANISHED_WARNING);
+            configuration.setInfiniteCommandInputLength(Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH);
             this.commandPrefixField.setText(Configuration.DEFAULT_COMMAND_PREFIX);
             configPositionButton.setMessage(Text.of(
                     "Config Button Position: ".concat(Configuration.DEFAULT_BUTTON_POSITION.getName())
@@ -130,6 +148,9 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             ));
             displayVanishedWarningButton.setMessage(Text.of(
                     "Display Vanished Warning: ".concat(String.valueOf(Configuration.DEFAULT_DISPLAY_VANISHED_WARNING))
+            ));
+            infiniteCommandInputLengthButton.setMessage(Text.of(
+                    "Infinite Command Input Length: ".concat(String.valueOf(Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH))
             ));
         }).position(x, y).width(buttonWidth).build());
         resetConfigButton.setTooltip(Tooltip.of(Text.literal("WARNING: This will reset all of your settings to the default values.").formatted(Formatting.RED)));
