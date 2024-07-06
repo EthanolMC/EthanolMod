@@ -130,7 +130,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
                     "Infinite Command Input Length: ".concat(String.valueOf(configuration.getInfiniteCommandInputLength()))
             ));
         }).position(x, y).width(buttonWidth).build());
-        infiniteCommandInputLengthButton.setTooltip(Tooltip.of(Text.of("This will allow you to type an infinite amount of characters in the chat input field when it starts with the Ethanol prefix and when ethanol is installed on the server.")));
+        infiniteCommandInputLengthButton.setTooltip(Tooltip.of(Text.of("This will allow you to type an infinite amount of characters in the chat input field when it starts with the Ethanol prefix and when Ethanol is installed on the server.")));
         y += offsetY * 2;
 
         final ButtonWidget resetConfigButton = this.addDrawableChild(ButtonWidget.builder(Text.of("Reset Config"), (button) -> {
