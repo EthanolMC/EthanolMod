@@ -27,7 +27,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     private TextFieldWidget commandPrefixField;
 
     public ConfigScreen(final Screen parentScreen) {
-        super(Text.of("Ethanol Mod Config"));
+        super(Text.literal("Ethanol Mod Config").formatted(Formatting.UNDERLINE));
         this.parentScreen = parentScreen;
     }
 
@@ -108,7 +108,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
                     "Display Command Send Warning: ".concat(String.valueOf(configuration.getDisplayCommandSendWarning()))
             ));
         }).position(x, y).width(buttonWidth).build());
-        displayCommandSendWarningButton.setTooltip(Tooltip.of(Text.of("This will display a warning when Ethanol is not installed on the server and when you try to send a chat message with the Ethanol prefix.")));
+        displayCommandSendWarningButton.setTooltip(Tooltip.of(Text.of("Displays a warning upon trying to send messages recognized as ethanol commands on a server where Ethanol is not installed.")));
         y += offsetY;
 
         final ButtonWidget displayVanishedWarningButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
@@ -119,7 +119,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
                     "Display Vanished Warning: ".concat(String.valueOf(configuration.getDisplayVanishedWarning()))
             ));
         }).position(x, y).width(buttonWidth).build());
-        displayVanishedWarningButton.setTooltip(Tooltip.of(Text.of("This will display a warning when you are vanished and when you try to send a chat message.")));
+        displayVanishedWarningButton.setTooltip(Tooltip.of(Text.of("Displays a warning when trying to send a chat message while being vanished.")));
         y += offsetY;
 
         final ButtonWidget infiniteCommandInputLengthButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
@@ -168,7 +168,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     public void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
         super.render(context, mouseX, mouseY, delta);
         final TextRenderer textRenderer = this.textRenderer;
-        context.drawCenteredTextWithShadow(textRenderer, Formatting.UNDERLINE + this.title.getString(), this.width / 2, 20, 16777215);
+        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, 16777215);
         context.drawTextWithShadow(
                 textRenderer,
                 "Command Prefix",
