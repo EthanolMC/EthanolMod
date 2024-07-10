@@ -65,9 +65,6 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
                 this.chatField.setMaxLength(Integer.MAX_VALUE);
             }
         } else {
-            if (configuration.getInfiniteCommandInputLength()) {
-                this.chatField.setMaxLength(ethanol$realMaxLength);
-            }
             if (ethanolMod.isVanished()) {
                 if (configuration.getDisplayVanishedWarning()) {
                     context.drawText(textRenderer, ETHANOL_VANISHED_WARNING_1, x, y, color, shadow);
