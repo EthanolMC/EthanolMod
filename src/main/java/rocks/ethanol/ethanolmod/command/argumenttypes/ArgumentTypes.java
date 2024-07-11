@@ -6,7 +6,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundRequestSuggestionsPayload;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;

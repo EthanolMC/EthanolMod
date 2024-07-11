@@ -1,4 +1,4 @@
-package rocks.ethanol.ethanolmod.utils;
+package rocks.ethanol.ethanolmod.structure;
 
 import net.minecraft.client.MinecraftClient;
 

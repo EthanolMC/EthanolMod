@@ -1,9 +1,9 @@
 package rocks.ethanol.ethanolmod.networking.impl.serverbound;
 
-import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 import java.nio.charset.StandardCharsets;
 
@@ -29,9 +29,13 @@ public class ServerboundCommandPayload implements EthanolPayload {
         buf.writeBytes(this.command.getBytes(StandardCharsets.UTF_8));
     }
 
+    public final String getCommand() {
+        return this.command;
+    }
+
     @Override
     public final Id<ServerboundCommandPayload> getId() {
-        return ID;
+        return ServerboundCommandPayload.ID;
     }
 
 }

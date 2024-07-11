@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundCommandPayload;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 public class AllowChatEventHandler implements ClientSendMessageEvents.AllowChat, MinecraftWrapper {
 
