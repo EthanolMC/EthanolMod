@@ -34,7 +34,7 @@ public class ClientboundCommandTreePayload implements EthanolPayload {
 
     @Override
     public final Id<ClientboundCommandTreePayload> getId() {
-        return ID;
+        return ClientboundCommandTreePayload.ID;
     }
 
 }

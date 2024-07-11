@@ -68,7 +68,7 @@ public class ClientboundSuggestionsResponsePayload implements EthanolPayload {
 
     @Override
     public final Id<ClientboundSuggestionsResponsePayload> getId() {
-        return ID;
+        return ClientboundSuggestionsResponsePayload.ID;
     }
 
 }

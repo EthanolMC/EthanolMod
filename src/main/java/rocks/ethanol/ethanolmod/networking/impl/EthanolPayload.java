@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 public interface EthanolPayload extends CustomPayload, MinecraftWrapper {
 

@@ -8,7 +8,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import rocks.ethanol.ethanolmod.command.CommandExceptions;
 import rocks.ethanol.ethanolmod.command.argumenttypes.ArgumentTypes;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 import java.util.concurrent.CompletableFuture;
 

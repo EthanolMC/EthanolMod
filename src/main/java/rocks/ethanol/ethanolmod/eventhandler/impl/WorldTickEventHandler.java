@@ -5,7 +5,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.networking.impl.shared.SharedInitPayload;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 public class WorldTickEventHandler implements ClientTickEvents.StartWorldTick, MinecraftWrapper {
 

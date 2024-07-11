@@ -8,19 +8,30 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.command.CommandSource;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import rocks.ethanol.ethanolmod.EthanolMod;
+import rocks.ethanol.ethanolmod.auth.AuthOptions;
+import rocks.ethanol.ethanolmod.auth.key.AuthKeyPair;
+import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundAuthDataPayload;
 import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundCommandTreePayload;
 import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundMessagePayload;
 import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundSuggestionsResponsePayload;
 import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundVanishPayload;
+import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundAuthResponsePacket;
 import rocks.ethanol.ethanolmod.networking.impl.shared.SharedInitPayload;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -65,9 +76,32 @@ public abstract class MixinClientPlayNetworkHandler implements MinecraftWrapper 
             case final ClientboundVanishPayload vanishPayload -> EthanolMod.getInstance().setVanished(vanishPayload.isVanished());
 
             case final SharedInitPayload ignored -> {
+                if (EthanolMod.getInstance().isAuthEnabled() && EthanolMod.getInstance().getAuthOptions().getMode() == AuthOptions.Mode.SEMI_AUTOMATIC) {
+                    EthanolMod.getInstance().getAuthOptions().getKnownHosts().add(((ClientPlayNetworkHandler) ((Object) this)).getServerInfo().address);
+                }
+
                 EthanolMod.getInstance().setInstalled(true);
                 EthanolMod.getInstance().setSend(false);
                 EthanolMod.getInstance().setShowStart(System.currentTimeMillis());
+            }
+
+            case final ClientboundAuthDataPayload authDataPayload -> {
+                final AuthKeyPair authKeyPair = EthanolMod.getInstance().getAuthKeyPairs().getByHash(authDataPayload.getPublicKeyHash());
+                if (authKeyPair == null) {
+                    return;
+                }
+
+                EthanolMod.LOGGER.info("Authenticating with '{}'.", authKeyPair.name());
+                EthanolMod.getInstance().setAuthEnabled(true);
+                try {
+                    final Cipher cipher = Cipher.getInstance("RSA");
+                    cipher.init(Cipher.DECRYPT_MODE, authKeyPair.keyPair().getPrivate());
+                    final byte[] verifyToken = cipher.doFinal(authDataPayload.getEncryptedVerifyToken());
+                    ((ClientPlayNetworkHandler) ((Object) this)).sendPacket(new CustomPayloadC2SPacket(new ServerboundAuthResponsePacket(verifyToken)));
+                } catch (final NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
+                               IllegalBlockSizeException | BadPaddingException exception) {
+                    throw new RuntimeException(exception);
+                }
             }
 
             default -> {

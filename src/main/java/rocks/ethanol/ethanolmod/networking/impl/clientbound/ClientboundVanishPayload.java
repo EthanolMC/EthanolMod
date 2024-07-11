@@ -1,9 +1,9 @@
 package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 
-import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 public class ClientboundVanishPayload implements EthanolPayload {
 
@@ -28,7 +28,7 @@ public class ClientboundVanishPayload implements EthanolPayload {
 
     @Override
     public final Id<ClientboundVanishPayload> getId() {
-        return ID;
+        return ClientboundVanishPayload.ID;
     }
 
 }

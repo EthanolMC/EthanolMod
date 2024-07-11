@@ -1,6 +1,9 @@
 package rocks.ethanol.ethanolmod.config;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -39,45 +42,44 @@ public class Configuration {
             return;
         }
         try (final Reader reader = Files.newBufferedReader(this.file)) {
-            final JsonElement jsonElement = JsonParser.parseReader(reader);
-            if (!jsonElement.isJsonNull()) {
-                final JsonObject configObject = jsonElement.getAsJsonObject();
-                if (configObject.has("commandPrefix")) {
-                    this.commandPrefix = configObject.get("commandPrefix").getAsString();
-                }
-                if (configObject.has("configButtonPosition")) {
-                    final String configButtonPosition = configObject.get("configButtonPosition").getAsString();
-                    for (final ConfigButtonPosition value : ConfigButtonPosition.values()) {
-                        if (value.getName().equals(configButtonPosition)) {
-                            this.configButtonPosition = value;
-                            break;
-                        }
+            final JsonObject data = JsonParser.parseReader(reader).getAsJsonObject();
+            if (data.has("commandPrefix")) {
+                this.commandPrefix = data.get("commandPrefix").getAsString();
+            }
+            if (data.has("configButtonPosition")) {
+                final String configButtonPosition = data.get("configButtonPosition").getAsString();
+                for (final ConfigButtonPosition value : ConfigButtonPosition.values()) {
+                    if (value.getDisplayName().equals(configButtonPosition)) {
+                        this.configButtonPosition = value;
+                        break;
                     }
                 }
-                if (configObject.has("displayCommandSendWarning")) {
-                    this.displayCommandSendWarning = configObject.get("displayCommandSendWarning").getAsBoolean();
-                }
-                if (configObject.has("displayVanishedWarning")) {
-                    this.displayVanishedWarning = configObject.get("displayVanishedWarning").getAsBoolean();
-                }
-                if (configObject.has("infiniteCommandInputLength")) {
-                    this.infiniteCommandInputLength = configObject.get("infiniteCommandInputLength").getAsBoolean();
-                }
+            }
+            if (data.has("displayCommandSendWarning")) {
+                this.displayCommandSendWarning = data.get("displayCommandSendWarning").getAsBoolean();
+            }
+            if (data.has("displayVanishedWarning")) {
+                this.displayVanishedWarning = data.get("displayVanishedWarning").getAsBoolean();
+            }
+            if (data.has("infiniteCommandInputLength")) {
+                this.infiniteCommandInputLength = data.get("infiniteCommandInputLength").getAsBoolean();
             }
         }
     }
 
-    public final void save() throws Exception {
-        final JsonObject configObject = new JsonObject();
+    public final void save() throws IOException {
+        final JsonObject output = new JsonObject();
+
         if (this.commandPrefix.isEmpty()) {
             this.commandPrefix = DEFAULT_COMMAND_PREFIX;
         }
-        configObject.addProperty("commandPrefix", this.commandPrefix);
-        configObject.addProperty("configButtonPosition", this.configButtonPosition.getName());
-        configObject.addProperty("displayCommandSendWarning", this.displayCommandSendWarning);
-        configObject.addProperty("displayVanishedWarning", this.displayVanishedWarning);
-        configObject.addProperty("infiniteCommandInputLength", this.infiniteCommandInputLength);
-        Files.writeString(this.file, Configuration.GSON.toJson(configObject), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+        output.addProperty("commandPrefix", this.commandPrefix);
+        output.addProperty("configButtonPosition", this.configButtonPosition.getDisplayName());
+        output.addProperty("displayCommandSendWarning", this.displayCommandSendWarning);
+        output.addProperty("displayVanishedWarning", this.displayVanishedWarning);
+        output.addProperty("infiniteCommandInputLength", this.infiniteCommandInputLength);
+
+        Files.writeString(this.file, Configuration.GSON.toJson(output), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     public final String getCommandPrefix() {
@@ -127,14 +129,14 @@ public class Configuration {
         BOTTOM_LEFT("Bottom Left"),
         BOTTOM_RIGHT("Bottom Right");
 
-        private final String name;
+        private final String displayName;
 
-        ConfigButtonPosition(final String name) {
-            this.name = name;
+        ConfigButtonPosition(final String displayName) {
+            this.displayName = displayName;
         }
 
-        public final String getName() {
-            return this.name;
+        public final String getDisplayName() {
+            return this.displayName;
         }
 
     }
