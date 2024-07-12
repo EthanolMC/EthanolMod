@@ -1,9 +1,9 @@
 package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 
-import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 import java.nio.charset.StandardCharsets;
 
@@ -30,7 +30,7 @@ public class ClientboundMessagePayload implements EthanolPayload {
 
     @Override
     public final Id<ClientboundMessagePayload> getId() {
-        return ID;
+        return ClientboundMessagePayload.ID;
     }
 
 }

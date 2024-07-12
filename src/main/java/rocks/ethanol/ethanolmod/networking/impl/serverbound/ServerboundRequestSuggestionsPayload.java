@@ -35,9 +35,21 @@ public class ServerboundRequestSuggestionsPayload implements EthanolPayload {
         buf.writeBytes(this.partialCommand.getBytes(StandardCharsets.UTF_8));
     }
 
+    public final long getNonce() {
+        return this.nonce;
+    }
+
+    public final int getPartialCommandOffset() {
+        return this.partialCommandOffset;
+    }
+
+    public final String getPartialCommand() {
+        return this.partialCommand;
+    }
+
     @Override
     public final Id<ServerboundRequestSuggestionsPayload> getId() {
-        return ID;
+        return ServerboundRequestSuggestionsPayload.ID;
     }
 
 }

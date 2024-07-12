@@ -1,26 +1,19 @@
-package rocks.ethanol.ethanolmod.config;
+package rocks.ethanol.ethanolmod.screen;
 
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ConfirmLinkScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.PressableTextWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import rocks.ethanol.ethanolmod.EthanolMod;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.config.Configuration;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 public class ConfigScreen extends Screen implements MinecraftWrapper {
-
-    private static final String DISCORD_INVITE_URL = "https://discord.com/invite/Xx4V9V6gfC";
-    private static final String GITHUB_REPOSITORY_URL = "https://github.com/EthanolMC/EthanolMod";
-
-    private static final String DISCORD_TEXT = "Discord";
-    private static final String GITHUB_TEXT = "GitHub";
 
     private final Screen parentScreen;
 
@@ -34,26 +27,6 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     @Override
     protected final void init() {
         final TextRenderer textRenderer = this.textRenderer;
-
-        this.addDrawableChild(new PressableTextWidget(
-                4,
-                this.height - textRenderer.fontHeight - 4,
-                textRenderer.getWidth(ConfigScreen.DISCORD_TEXT),
-                textRenderer.fontHeight + 2,
-                Text.of(ConfigScreen.DISCORD_TEXT),
-                ConfirmLinkScreen.opening(this, DISCORD_INVITE_URL),
-                textRenderer
-        )).setTooltip(Tooltip.of(Text.of("Join the Ethanol Discord server.")));
-
-        this.addDrawableChild(new PressableTextWidget(
-                this.width - textRenderer.getWidth(ConfigScreen.GITHUB_TEXT) - 4,
-                this.height - textRenderer.fontHeight - 4,
-                textRenderer.getWidth(ConfigScreen.GITHUB_TEXT),
-                textRenderer.fontHeight + 2,
-                Text.of(ConfigScreen.GITHUB_TEXT),
-                ConfirmLinkScreen.opening(this, GITHUB_REPOSITORY_URL),
-                textRenderer
-        )).setTooltip(Tooltip.of(Text.of("View the Ethanol Mod GitHub repository.")));
 
         final Configuration configuration = EthanolMod.getInstance().getConfiguration();
 
@@ -84,17 +57,18 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         int y = commandPrefixFieldY + 14;
 
         final ButtonWidget configPositionButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Config Button Position: ".concat(configuration.getConfigButtonPosition().getName())
+                "Config Button Position: ".concat(configuration.getConfigButtonPosition().getDisplayName())
         ), (button) -> {
+            Configuration.ConfigButtonPosition position = configuration.getConfigButtonPosition();
             final Configuration.ConfigButtonPosition[] values = Configuration.ConfigButtonPosition.values();
-            final int nextIndex = configuration.getConfigButtonPosition().ordinal() + 1;
+            final int nextIndex = position.ordinal() + 1;
             if (nextIndex < values.length) {
-                configuration.setConfigButtonPosition(values[nextIndex]);
+                configuration.setConfigButtonPosition(position = values[nextIndex]);
             } else {
-                configuration.setConfigButtonPosition(values[0]);
+                configuration.setConfigButtonPosition(position = values[0]);
             }
             button.setMessage(Text.of(
-                    "Config Button Position: ".concat(configuration.getConfigButtonPosition().getName())
+                    "Config Button Position: ".concat(position.getDisplayName())
             ));
         }).position(x, y).width(buttonWidth).build());
         configPositionButton.setTooltip(Tooltip.of(Text.of("The position of the config button in the game menu screen and the multiplayer screen.")));
@@ -141,7 +115,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             configuration.setInfiniteCommandInputLength(Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH);
             this.commandPrefixField.setText(Configuration.DEFAULT_COMMAND_PREFIX);
             configPositionButton.setMessage(Text.of(
-                    "Config Button Position: ".concat(Configuration.DEFAULT_BUTTON_POSITION.getName())
+                    "Config Button Position: ".concat(Configuration.DEFAULT_BUTTON_POSITION.getDisplayName())
             ));
             displayCommandSendWarningButton.setMessage(Text.of(
                     "Display Command Send Warning: ".concat(String.valueOf(Configuration.DEFAULT_DISPLAY_COMMAND_SEND_WARNING))
@@ -165,10 +139,11 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     }
 
     @Override
-    public void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
+    public final void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
         super.render(context, mouseX, mouseY, delta);
         final TextRenderer textRenderer = this.textRenderer;
         context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, 16777215);
+
         context.drawTextWithShadow(
                 textRenderer,
                 "Command Prefix",
@@ -180,26 +155,11 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     }
 
     @Override
-    public void close() {
+    public final void close() {
         if (this.commandPrefixField.getText().isEmpty()) {
             EthanolMod.getInstance().getConfiguration().setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
         }
         this.client.setScreen(this.parentScreen);
-    }
-
-    public static ButtonWidget createButton(final Screen currentScreen) {
-        final ButtonWidget.Builder buttonBuilder = ButtonWidget.builder(Text.of("E"), button -> {
-            if (mc != null) {
-                mc.setScreen(new ConfigScreen(currentScreen));
-            }
-        });
-        switch (EthanolMod.getInstance().getConfiguration().getConfigButtonPosition()) {
-            case Configuration.ConfigButtonPosition.TOP_LEFT -> buttonBuilder.position(4, 4);
-            case Configuration.ConfigButtonPosition.TOP_RIGHT -> buttonBuilder.position(currentScreen.width - 24, 4);
-            case Configuration.ConfigButtonPosition.BOTTOM_LEFT -> buttonBuilder.position(4, currentScreen.height - 24);
-            case Configuration.ConfigButtonPosition.BOTTOM_RIGHT -> buttonBuilder.position(currentScreen.width - 24, currentScreen.height - 24);
-        }
-        return buttonBuilder.size(20, 20).build();
     }
 
 }

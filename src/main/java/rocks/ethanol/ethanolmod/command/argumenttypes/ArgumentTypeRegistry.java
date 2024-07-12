@@ -1,8 +1,19 @@
 package rocks.ethanol.ethanolmod.command.argumenttypes;
 
-import com.mojang.brigadier.arguments.*;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.BoolArgumentType;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
+import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import io.netty.buffer.ByteBuf;
-import rocks.ethanol.ethanolmod.command.argumenttypes.impl.*;
+import rocks.ethanol.ethanolmod.command.argumenttypes.impl.IntVector3ArgumentType;
+import rocks.ethanol.ethanolmod.command.argumenttypes.impl.OptionArgumentType;
+import rocks.ethanol.ethanolmod.command.argumenttypes.impl.PlayerLookupArgumentType;
+import rocks.ethanol.ethanolmod.command.argumenttypes.impl.PluginArgumentType;
+import rocks.ethanol.ethanolmod.command.argumenttypes.impl.UUIDArgumentType;
+import rocks.ethanol.ethanolmod.command.argumenttypes.impl.WorldArgumentType;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;

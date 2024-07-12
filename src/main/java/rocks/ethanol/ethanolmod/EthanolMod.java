@@ -8,10 +8,12 @@ import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.command.CommandSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rocks.ethanol.ethanolmod.auth.AuthOptions;
+import rocks.ethanol.ethanolmod.auth.key.AuthKeyPairs;
 import rocks.ethanol.ethanolmod.config.Configuration;
 import rocks.ethanol.ethanolmod.eventhandler.EventInitializer;
 import rocks.ethanol.ethanolmod.networking.PayloadInitializer;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,12 +25,16 @@ import java.util.concurrent.CompletableFuture;
 public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
 
     public static final String NAME = "Ethanol Mod";
+    public static final String ID = "ethanolmod";
     public static final Logger LOGGER = LoggerFactory.getLogger(EthanolMod.class);
 
     private static EthanolMod instance;
 
     private Configuration configuration;
+    private AuthKeyPairs authKeyPairs;
+    private AuthOptions authOptions;
     private boolean installed;
+    private boolean authEnabled;
     private boolean send;
     private boolean vanished;
     private long showStart;
@@ -50,32 +56,87 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
     public void onInitializeClient() {
         EthanolMod.instance = this;
 
-        {
-            final Path configDir = this.mc.runDirectory.toPath().resolve("config");
-            if (!Files.exists(configDir)) {
+        final Path directory = this.mc.runDirectory.toPath().resolve(EthanolMod.ID);
+        if (!Files.isDirectory(directory)) {
+            try {
+                Files.createDirectories(directory);
+            } catch (final IOException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        { // configuration
+            this.configuration = new Configuration(directory.resolve("config.json"));
+
+            try {
+                this.configuration.load();
+            } catch (final IOException exception) {
+                EthanolMod.LOGGER.error("Failed to load config!", exception);
+            }
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
-                    Files.createDirectories(configDir);
+                    this.configuration.save();
+                } catch (final IOException exception) {
+                    EthanolMod.LOGGER.error("Failed to save config!", exception);
+                }
+            }));
+        }
+
+        { // auth
+            final Path authDirectory = directory.resolve("auth");
+            if (!Files.isDirectory(authDirectory)) {
+                try {
+                    Files.createDirectories(authDirectory);
                 } catch (final IOException exception) {
                     throw new RuntimeException(exception);
                 }
             }
 
-            this.configuration = new Configuration(configDir.resolve("ethanolmod.json"));
-        }
+            { // auth key pairs
+                final Path authKeyPairsPath = authDirectory.resolve("key-pairs");
+                if (!Files.isDirectory(authKeyPairsPath)) {
+                    try {
+                        Files.createDirectories(authKeyPairsPath);
+                    } catch (final IOException exception) {
+                        throw new RuntimeException(exception);
+                    }
+                }
 
-        try {
-            this.configuration.load();
-        } catch (final IOException exception) {
-            EthanolMod.LOGGER.error("Failed to load config!", exception);
-        }
+                this.authKeyPairs = new AuthKeyPairs(authKeyPairsPath);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                this.configuration.save();
-            } catch (final Exception exception) {
-                EthanolMod.LOGGER.error("Failed to save config!", exception);
+                try {
+                    this.authKeyPairs.load();
+                } catch (final IOException exception) {
+                    EthanolMod.LOGGER.error("Failed to load auth key pairs!", exception);
+                }
+
+                try {
+                    this.authKeyPairs.watch();
+                } catch (final IOException exception) {
+                    EthanolMod.LOGGER.error("Failed to start auth key pair watcher!", exception);
+                }
             }
-        }));
+
+            { // configuration
+                this.authOptions = new AuthOptions(authDirectory.resolve("options.json"));
+
+                try {
+                    this.authOptions.load();
+                } catch (final IOException exception) {
+                    EthanolMod.LOGGER.error("Failed to load auth options!", exception);
+                }
+
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    try {
+                        this.authOptions.save();
+                    } catch (final IOException exception) {
+                        EthanolMod.LOGGER.error("Failed to save auth options!", exception);
+                    }
+                }));
+            }
+
+        }
 
         EventInitializer.init();
         PayloadInitializer.init();
@@ -87,6 +148,14 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
 
     public Configuration getConfiguration() {
         return this.configuration;
+    }
+
+    public final AuthOptions getAuthOptions() {
+        return this.authOptions;
+    }
+
+    public final AuthKeyPairs getAuthKeyPairs() {
+        return this.authKeyPairs;
     }
 
     public boolean isInstalled() {
@@ -141,4 +210,11 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
         return this.pendingRequests;
     }
 
+    public final boolean isAuthEnabled() {
+        return this.authEnabled;
+    }
+
+    public final void setAuthEnabled(final boolean authEnabled) {
+        this.authEnabled = authEnabled;
+    }
 }
