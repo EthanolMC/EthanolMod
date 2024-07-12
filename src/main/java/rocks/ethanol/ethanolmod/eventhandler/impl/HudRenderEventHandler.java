@@ -6,7 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.text.Text;
 import rocks.ethanol.ethanolmod.EthanolMod;
-import rocks.ethanol.ethanolmod.utils.MinecraftWrapper;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrapper {
 
@@ -19,7 +19,7 @@ public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrappe
             if (System.currentTimeMillis() - ethanolMod.getShowStart() < 10_000L) { // TODO: Ethanol Detection Notification Display Duration
                 drawContext.drawText(
                         textRenderer,
-                        Text.of("Ethanol detected"),
+                        Text.of(ethanolMod.isAuthEnabled() ? "Ethanol detected (authenticated)" : "Ethanol detected"),
                         0,
                         bottom,
                         0xFFFFFF,
