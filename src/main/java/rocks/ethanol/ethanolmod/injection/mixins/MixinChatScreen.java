@@ -42,6 +42,9 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
 
     @Inject(method = "render", at = @At(value = "RETURN"))
     public final void displayEthanolModWarningsAndSetMaxChatInputLength(final DrawContext context, final int mouseX, final int mouseY, final float delta, final CallbackInfo info) {
+        if (this.mc.isIntegratedServerRunning()) {
+            return;
+        }
         final String text = this.chatField.getText();
         if (text.isEmpty()) return;
         final EthanolMod ethanolMod = EthanolMod.getInstance();

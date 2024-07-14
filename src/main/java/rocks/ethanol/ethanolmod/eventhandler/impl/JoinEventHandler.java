@@ -9,11 +9,15 @@ import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.auth.AuthOptions;
 import rocks.ethanol.ethanolmod.auth.key.AuthKeyPair;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundAuthInitPacket;
+import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
-public class JoinEventHandler implements ClientPlayConnectionEvents.Join {
+public class JoinEventHandler implements ClientPlayConnectionEvents.Join, MinecraftWrapper {
 
     @Override
     public final void onPlayReady(final ClientPlayNetworkHandler handler, final PacketSender sender, final MinecraftClient client) {
+        if (this.mc.isIntegratedServerRunning()) {
+            return;
+        }
         final AuthOptions options = EthanolMod.getInstance().getAuthOptions();
         switch (options.getMode()) {
             case SEMI_AUTOMATIC -> {

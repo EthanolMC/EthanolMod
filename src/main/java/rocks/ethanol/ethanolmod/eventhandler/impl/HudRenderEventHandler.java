@@ -12,6 +12,9 @@ public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrappe
 
     @Override
     public final void onHudRender(final DrawContext drawContext, final RenderTickCounter tickCounter) {
+        if (this.mc.isIntegratedServerRunning()) {
+            return;
+        }
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         if (ethanolMod.isInstalled()) {
             final TextRenderer textRenderer = this.mc.textRenderer;
