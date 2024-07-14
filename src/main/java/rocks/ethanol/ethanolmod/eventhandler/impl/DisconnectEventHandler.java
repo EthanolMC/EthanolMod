@@ -12,6 +12,7 @@ public class DisconnectEventHandler implements ClientPlayConnectionEvents.Discon
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         ethanolMod.setInstalled(false);
         ethanolMod.setSend(false);
+        ethanolMod.setAuthEnabled(false);
         ethanolMod.setVanished(false);
         ethanolMod.resetCommandDispatcher();
         ethanolMod.getPendingRequests().clear();
