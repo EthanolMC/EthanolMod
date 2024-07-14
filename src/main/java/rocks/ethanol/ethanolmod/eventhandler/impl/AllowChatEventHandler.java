@@ -10,6 +10,9 @@ public class AllowChatEventHandler implements ClientSendMessageEvents.AllowChat,
 
     @Override
     public final boolean allowSendChatMessage(final String message) {
+        if (this.mc.isIntegratedServerRunning()) {
+            return true;
+        }
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         final String prefix = ethanolMod.getConfiguration().getCommandPrefix();
 

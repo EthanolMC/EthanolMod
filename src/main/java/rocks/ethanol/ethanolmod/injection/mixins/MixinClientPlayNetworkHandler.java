@@ -17,11 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.auth.AuthOptions;
 import rocks.ethanol.ethanolmod.auth.key.AuthKeyPair;
-import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundAuthDataPayload;
-import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundCommandTreePayload;
-import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundMessagePayload;
-import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundSuggestionsResponsePayload;
-import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundVanishPayload;
+import rocks.ethanol.ethanolmod.networking.impl.clientbound.*;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundAuthResponsePacket;
 import rocks.ethanol.ethanolmod.networking.impl.shared.SharedInitPayload;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
@@ -40,6 +36,9 @@ public abstract class MixinClientPlayNetworkHandler implements MinecraftWrapper 
 
     @Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)
     private void executeClientCommands(final String message, final CallbackInfo info) {
+        if (this.mc.isIntegratedServerRunning()) {
+            return;
+        }
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         final CommandDispatcher<CommandSource> commandDispatcher = ethanolMod.getCommandDispatcher();
         if (commandDispatcher == null) return;
@@ -58,6 +57,9 @@ public abstract class MixinClientPlayNetworkHandler implements MinecraftWrapper 
 
     @Inject(method = "onCustomPayload", at = @At("HEAD"), cancellable = true)
     private void onCustomPayload(final CustomPayload payload, final CallbackInfo info) {
+        if (this.mc.isIntegratedServerRunning()) {
+            return;
+        }
         switch (payload) {
             case final ClientboundCommandTreePayload commandTreePayload -> EthanolMod.getInstance().updateCommandDispatcher(new CommandDispatcher<>(commandTreePayload.getRoot()));
 
