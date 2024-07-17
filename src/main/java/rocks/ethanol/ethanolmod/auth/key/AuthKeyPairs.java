@@ -1,5 +1,8 @@
 package rocks.ethanol.ethanolmod.auth.key;
 
+import rocks.ethanol.ethanolmod.EthanolMod;
+
+import java.io.IOException;
 import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +25,7 @@ public class AuthKeyPairs {
         this.watching = false;
     }
 
-    public final void watch() throws Exception {
+    public final void watch() throws IOException {
         if (this.watching) {
             throw new IllegalStateException("Already watching!");
         }
@@ -36,13 +39,16 @@ public class AuthKeyPairs {
                 final WatchKey key;
                 try {
                     key = watchService.take();
-                } catch (InterruptedException ex) {
+                } catch (final InterruptedException ignored) {
                     return;
                 }
+
                 if (!key.pollEvents().isEmpty()) {
                     try {
                         this.load();
-                    } catch (final Exception ignored) { }
+                    } catch (final IOException | RuntimeException exception) {
+                        EthanolMod.LOGGER.error("Failed to load auth key pairs!", exception);
+                    }
                 }
 
                 if (!key.reset()) {
@@ -52,13 +58,13 @@ public class AuthKeyPairs {
         });
     }
 
-    public final void load() throws Exception {
+    public final void load() throws IOException {
         final List<AuthKeyPair> newKeyPairs = new CopyOnWriteArrayList<>();
         try (final Stream<Path> stream = Files.walk(this.directory, 1)) {
             for (final Path keyFile : stream.filter(Files::isRegularFile).toList()) {
                 try {
                     newKeyPairs.add(AuthKeyPair.fromFile(keyFile));
-                } catch (final Exception ignored) { }
+                } catch (final IOException ignored) { }
             }
         }
         this.keyPairs = newKeyPairs;

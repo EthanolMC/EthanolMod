@@ -15,6 +15,7 @@ import rocks.ethanol.ethanolmod.eventhandler.EventInitializer;
 import rocks.ethanol.ethanolmod.networking.PayloadInitializer;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
         if (!Files.isDirectory(directory)) {
             try {
                 Files.createDirectories(directory);
-            } catch (final Exception exception) {
+            } catch (final IOException exception) {
                 throw new RuntimeException(exception);
             }
         }
@@ -69,14 +70,14 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
 
             try {
                 this.configuration.load();
-            } catch (final Exception exception) {
+            } catch (final IOException | RuntimeException exception) {
                 EthanolMod.LOGGER.error("Failed to load config!", exception);
             }
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     this.configuration.save();
-                } catch (final Exception exception) {
+                } catch (final IOException | RuntimeException exception) {
                     EthanolMod.LOGGER.error("Failed to save config!", exception);
                 }
             }));
@@ -87,7 +88,7 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
             if (!Files.isDirectory(authDirectory)) {
                 try {
                     Files.createDirectories(authDirectory);
-                } catch (final Exception exception) {
+                } catch (final IOException exception) {
                     throw new RuntimeException(exception);
                 }
             }
@@ -97,7 +98,7 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
                 if (!Files.isDirectory(authKeyPairsPath)) {
                     try {
                         Files.createDirectories(authKeyPairsPath);
-                    } catch (final Exception exception) {
+                    } catch (final IOException exception) {
                         throw new RuntimeException(exception);
                     }
                 }
@@ -106,13 +107,13 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
 
                 try {
                     this.authKeyPairs.load();
-                } catch (final Exception exception) {
+                } catch (final IOException | RuntimeException exception) {
                     EthanolMod.LOGGER.error("Failed to load auth key pairs!", exception);
                 }
 
                 try {
                     this.authKeyPairs.watch();
-                } catch (final Exception exception) {
+                } catch (final IOException | RuntimeException exception) {
                     EthanolMod.LOGGER.error("Failed to start auth key pair watcher!", exception);
                 }
             }
@@ -122,19 +123,18 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
 
                 try {
                     this.authOptions.load();
-                } catch (final Exception exception) {
+                } catch (final IOException | RuntimeException exception) {
                     EthanolMod.LOGGER.error("Failed to load auth options!", exception);
                 }
 
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                     try {
                         this.authOptions.save();
-                    } catch (final Exception exception) {
+                    } catch (final IOException | RuntimeException exception) {
                         EthanolMod.LOGGER.error("Failed to save auth options!", exception);
                     }
                 }));
             }
-
         }
 
         EventInitializer.init();
