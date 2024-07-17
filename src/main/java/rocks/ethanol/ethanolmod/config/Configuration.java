@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +36,7 @@ public class Configuration {
         this.infiniteCommandInputLength = Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH;
     }
 
-    public final void load() throws IOException {
+    public final void load() throws Exception {
         if (!Files.exists(this.file)) {
             return;
         }
@@ -67,7 +66,7 @@ public class Configuration {
         }
     }
 
-    public final void save() throws IOException {
+    public final void save() throws Exception {
         final JsonObject output = new JsonObject();
 
         if (this.commandPrefix.isEmpty()) {

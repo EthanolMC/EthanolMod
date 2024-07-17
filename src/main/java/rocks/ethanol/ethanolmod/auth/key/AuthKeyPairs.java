@@ -1,11 +1,6 @@
 package rocks.ethanol.ethanolmod.auth.key;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardWatchEventKinds;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -27,7 +22,7 @@ public class AuthKeyPairs {
         this.watching = false;
     }
 
-    public final void watch() throws IOException {
+    public final void watch() throws Exception {
         if (this.watching) {
             throw new IllegalStateException("Already watching!");
         }
@@ -47,7 +42,7 @@ public class AuthKeyPairs {
                 if (!key.pollEvents().isEmpty()) {
                     try {
                         this.load();
-                    } catch (final IOException ignored) { }
+                    } catch (final Exception ignored) { }
                 }
 
                 if (!key.reset()) {
@@ -57,13 +52,13 @@ public class AuthKeyPairs {
         });
     }
 
-    public final void load() throws IOException {
+    public final void load() throws Exception {
         final List<AuthKeyPair> newKeyPairs = new CopyOnWriteArrayList<>();
         try (final Stream<Path> stream = Files.walk(this.directory, 1)) {
             for (final Path keyFile : stream.filter(Files::isRegularFile).toList()) {
                 try {
                     newKeyPairs.add(AuthKeyPair.fromFile(keyFile));
-                } catch (final IOException ignored) { }
+                } catch (final Exception ignored) { }
             }
         }
         this.keyPairs = newKeyPairs;

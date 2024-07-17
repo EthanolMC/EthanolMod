@@ -1,13 +1,7 @@
 package rocks.ethanol.ethanolmod.auth;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +23,7 @@ public class AuthOptions {
         this.knownHosts = new HashSet<>();
     }
 
-    public final void load() throws IOException {
+    public final void load() throws Exception {
         if (!Files.exists(this.file)) {
             return;
         }
@@ -52,7 +46,7 @@ public class AuthOptions {
         }
     }
 
-    public final void save() throws IOException {
+    public final void save() throws Exception {
         final JsonObject output = new JsonObject();
 
         output.addProperty("mode", this.mode.name());
