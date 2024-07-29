@@ -4,6 +4,7 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -12,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.config.Configuration;
+import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundCommandPayload;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 @Mixin(value = ChatScreen.class, priority = 9969)
@@ -38,6 +40,29 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
     @Inject(method = "init", at = @At(value = "RETURN"))
     private void setRealMaxLength(final CallbackInfo ci) {
         this.ethanol$realMaxLength = this.chatField.getMaxLength();
+    }
+
+    @Inject(method = "sendMessage", at = @At("HEAD"), cancellable = true)
+    private void handleEthanolCommand(final String message, final boolean addToHistory, final CallbackInfo ci) {
+        if (this.mc.isIntegratedServerRunning()) {
+            return;
+        }
+
+        final EthanolMod ethanolMod = EthanolMod.getInstance();
+        final String prefix = ethanolMod.getConfiguration().getCommandPrefix();
+
+        if (!ethanolMod.isInstalled() || !message.startsWith(prefix)) {
+            return;
+        }
+
+        final String command = message.substring(prefix.length());
+        if (command.isEmpty()) {
+            return;
+        }
+
+        this.mc.inGameHud.getChatHud().addToMessageHistory(message);
+        this.mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundCommandPayload(command)));
+        ci.cancel();
     }
 
     @Inject(method = "render", at = @At(value = "RETURN"))
