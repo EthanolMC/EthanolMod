@@ -10,10 +10,10 @@ import rocks.ethanol.ethanolmod.command.argumenttypes.ArgumentTypes;
 
 import java.util.concurrent.CompletableFuture;
 
-public class WorldArgumentType implements ArgumentType<String> {
+public class ServersideArgumentType implements ArgumentType<String> {
 
-    public static WorldArgumentType create() {
-        return new WorldArgumentType();
+    public static ServersideArgumentType create() {
+        return new ServersideArgumentType();
     }
 
     public static String get(final CommandContext<?> context, final String name) {
@@ -27,7 +27,21 @@ public class WorldArgumentType implements ArgumentType<String> {
 
     @Override
     public final String parse(final StringReader stringReader) throws CommandSyntaxException {
-        return stringReader.readString();
+        if (!stringReader.canRead()) {
+            return "";
+        }
+        final char next = stringReader.peek();
+        if (next == '"') {
+            stringReader.skip();
+            return stringReader.readStringUntil(next);
+        }
+
+        final int start = stringReader.getCursor();
+        while (stringReader.canRead() && stringReader.peek() != ' ') {
+            stringReader.skip();
+        }
+
+        return stringReader.getString().substring(start, stringReader.getCursor());
     }
 
 }

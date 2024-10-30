@@ -14,9 +14,7 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import net.minecraft.text.Text;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -30,7 +28,6 @@ import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundSuggestio
 import rocks.ethanol.ethanolmod.networking.impl.clientbound.ClientboundVanishPayload;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundAuthResponsePacket;
 import rocks.ethanol.ethanolmod.networking.impl.shared.SharedInitPayload;
-import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
