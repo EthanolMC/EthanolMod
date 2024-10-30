@@ -11,9 +11,8 @@ import io.netty.buffer.ByteBuf;
 import rocks.ethanol.ethanolmod.command.argumenttypes.impl.IntVector3ArgumentType;
 import rocks.ethanol.ethanolmod.command.argumenttypes.impl.OptionArgumentType;
 import rocks.ethanol.ethanolmod.command.argumenttypes.impl.PlayerLookupArgumentType;
-import rocks.ethanol.ethanolmod.command.argumenttypes.impl.PluginArgumentType;
+import rocks.ethanol.ethanolmod.command.argumenttypes.impl.ServersideArgumentType;
 import rocks.ethanol.ethanolmod.command.argumenttypes.impl.UUIDArgumentType;
-import rocks.ethanol.ethanolmod.command.argumenttypes.impl.WorldArgumentType;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -110,9 +109,14 @@ public class ArgumentTypeRegistry {
             buf.writeBoolean(type.isSingleOnly());
             buf.writeBoolean(type.isOriginal());
         }, (type) -> new PlayerLookupArgumentType(type.isSingleOnly(), type.isOriginal())));
-        this.register(ArgumentSerializer.of(PluginArgumentType.class, "plugin", PluginArgumentType::create, (type) -> PluginArgumentType.create()));
+
+        this.register(ArgumentSerializer.of(ServersideArgumentType.class, "serverside", ServersideArgumentType::create, (type) -> ServersideArgumentType.create()));
+        {
+            this.register(ArgumentSerializer.of(ServersideArgumentType.class, "plugin", ServersideArgumentType::create, (type) -> ServersideArgumentType.create()));
+            this.register(ArgumentSerializer.of(ServersideArgumentType.class, "world", ServersideArgumentType::create, (type) -> ServersideArgumentType.create()));
+        }
+
         this.register(ArgumentSerializer.of(UUIDArgumentType.class, "uuid", UUIDArgumentType::create, (type) -> UUIDArgumentType.create()));
-        this.register(ArgumentSerializer.of(WorldArgumentType.class, "world", WorldArgumentType::create, (type) -> WorldArgumentType.create()));
     }
 
     public final void register(final ArgumentSerializer<?> serializer) {
