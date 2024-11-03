@@ -12,14 +12,14 @@ public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrappe
 
     @Override
     public final void onHudRender(final DrawContext drawContext, final RenderTickCounter tickCounter) {
-        if (this.mc.isIntegratedServerRunning()) {
+        if (mc.isIntegratedServerRunning()) {
             return;
         }
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         if (ethanolMod.isInstalled()) {
-            final TextRenderer textRenderer = this.mc.textRenderer;
+            final TextRenderer textRenderer = mc.textRenderer;
             final int bottom = drawContext.getScaledWindowHeight() - textRenderer.fontHeight;
-            if (System.currentTimeMillis() - ethanolMod.getShowStart() < 10_000L) { // TODO: Ethanol Detection Notification Display Duration
+            if (System.currentTimeMillis() - ethanolMod.getShowStart() < ethanolMod.getConfiguration().getDetectionNotificationDisplayDuration()) {
                 drawContext.drawText(
                         textRenderer,
                         Text.of(ethanolMod.isAuthEnabled() ? "Ethanol detected (authenticated)" : "Ethanol detected"),

@@ -18,6 +18,7 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     private final Screen parentScreen;
 
     private TextFieldWidget commandPrefixField;
+    private TextFieldWidget detectionNotificationDisplayDurationField;
 
     public ConfigScreen(final Screen parentScreen) {
         super(Text.literal("Ethanol Mod Config").formatted(Formatting.UNDERLINE));
@@ -43,18 +44,40 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         this.commandPrefixField.setMaxLength(25);
         this.commandPrefixField.setChangedListener(text -> {
             if (text.startsWith("/")) {
-                text = Configuration.DEFAULT_COMMAND_PREFIX;
-                this.commandPrefixField.setText(text);
+                this.commandPrefixField.setEditableColor(0xFF0000);
+            } else {
+                this.commandPrefixField.setEditableColor(0xFFFFFF);
             }
             configuration.setCommandPrefix(text);
         });
         this.addSelectableChild(this.commandPrefixField);
 
+        this.detectionNotificationDisplayDurationField = new TextFieldWidget(
+                textRenderer,
+                this.width / 2 - 100,
+                this.height / 2 - 30,
+                200,
+                20,
+                Text.of("Detection Notification Display Duration")
+        );
+        this.detectionNotificationDisplayDurationField.setText(String.valueOf(configuration.getDetectionNotificationDisplayDuration()));
+        this.detectionNotificationDisplayDurationField.setTooltip(Tooltip.of(Text.of("The duration in milliseconds to display the Ethanol detection notification.")));
+        this.detectionNotificationDisplayDurationField.setMaxLength(25);
+        this.detectionNotificationDisplayDurationField.setChangedListener(text -> {
+            try {
+                configuration.setDetectionNotificationDisplayDuration(Long.parseLong(this.detectionNotificationDisplayDurationField.getText()));
+                this.detectionNotificationDisplayDurationField.setEditableColor(0xFFFFFF);
+            } catch (final NumberFormatException ignored) {
+                this.detectionNotificationDisplayDurationField.setEditableColor(0xFF0000);
+            }
+        });
+        this.addSelectableChild(this.detectionNotificationDisplayDurationField);
+
         final int buttonWidth = 190;
-        final int commandPrefixFieldY = this.commandPrefixField.getY() + this.commandPrefixField.getHeight();
+        final int startY = this.detectionNotificationDisplayDurationField.getY() + this.detectionNotificationDisplayDurationField.getHeight();
         final int x = this.width / 2 - 95;
         final int offsetY = 22;
-        int y = commandPrefixFieldY + 14;
+        int y = startY + 14;
 
         final ButtonWidget configPositionButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
                 "Config Button Position: ".concat(configuration.getConfigButtonPosition().getDisplayName())
@@ -105,7 +128,6 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             ));
         }).position(x, y).width(buttonWidth).build());
         infiniteCommandInputLengthButton.setTooltip(Tooltip.of(Text.of("This will allow you to type an infinite amount of characters in the chat input field when it starts with the Ethanol prefix and when Ethanol is installed on the server.")));
-        y += offsetY * 2;
 
         final ButtonWidget resetConfigButton = this.addDrawableChild(ButtonWidget.builder(Text.of("Reset Config"), (button) -> {
             configuration.setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
@@ -113,7 +135,9 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             configuration.setDisplayCommandSendWarning(Configuration.DEFAULT_DISPLAY_COMMAND_SEND_WARNING);
             configuration.setDisplayVanishedWarning(Configuration.DEFAULT_DISPLAY_VANISHED_WARNING);
             configuration.setInfiniteCommandInputLength(Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH);
+            configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
             this.commandPrefixField.setText(Configuration.DEFAULT_COMMAND_PREFIX);
+            this.detectionNotificationDisplayDurationField.setText(String.valueOf(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION));
             configPositionButton.setMessage(Text.of(
                     "Config Button Position: ".concat(Configuration.DEFAULT_BUTTON_POSITION.getDisplayName())
             ));
@@ -126,14 +150,13 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
             infiniteCommandInputLengthButton.setMessage(Text.of(
                     "Infinite Command Input Length: ".concat(String.valueOf(Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH))
             ));
-        }).position(x, y).width(buttonWidth).build());
+        }).dimensions(this.width - 72, this.height - 22, 70, 20).build());
         resetConfigButton.setTooltip(Tooltip.of(Text.literal("WARNING: This will reset all of your settings to the default values.").formatted(Formatting.RED)));
-        y += offsetY;
 
         this.addDrawableChild(
                 ButtonWidget
                         .builder(ScreenTexts.BACK, (button) -> this.close())
-                        .position(this.width / 2 - 75, y + 2)
+                        .dimensions(2, this.height - 22, 70, 20)
                         .build()
         );
     }
@@ -152,12 +175,39 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
                 16777215
         );
         this.commandPrefixField.render(context, mouseX, mouseY, delta);
+
+        context.drawTextWithShadow(
+                textRenderer,
+                "Detection Notification Display Duration",
+                this.detectionNotificationDisplayDurationField.getX(),
+                this.detectionNotificationDisplayDurationField.getY() - textRenderer.fontHeight - 2,
+                16777215
+        );
+        this.detectionNotificationDisplayDurationField.render(context, mouseX, mouseY, delta);
     }
 
     @Override
     public final void close() {
-        if (this.commandPrefixField.getText().isEmpty()) {
-            EthanolMod.getInstance().getConfiguration().setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
+        final Configuration configuration = EthanolMod.getInstance().getConfiguration();
+        final String commandPrefix = this.commandPrefixField.getText();
+        if (commandPrefix.isEmpty()) {
+            configuration.setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
+        } else {
+            if (commandPrefix.startsWith("/")) {
+                configuration.setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
+            } else {
+                configuration.setCommandPrefix(commandPrefix);
+            }
+        }
+        final String detectionNotificationDisplayDuration = this.detectionNotificationDisplayDurationField.getText();
+        if (detectionNotificationDisplayDuration.isEmpty()) {
+            configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
+        } else {
+            try {
+                configuration.setDetectionNotificationDisplayDuration(Long.parseLong(detectionNotificationDisplayDuration));
+            } catch (final NumberFormatException ignored) {
+                configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
+            }
         }
         this.client.setScreen(this.parentScreen);
     }

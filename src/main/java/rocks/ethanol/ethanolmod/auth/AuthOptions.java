@@ -75,9 +75,9 @@ public class AuthOptions {
     }
 
     public enum Mode {
-        MANUAL("Manual","Requires you to manually authenticate everytime you join a server"),
-        SEMI_AUTOMATIC("Semi Automatic", "Remembers servers where authentication succeeded and tries to authenticate automatically on join"),
-        AUTOMATIC("Automatic", "Tries to authenticate automatically on every server you join");
+        MANUAL("Manual", "Requires you to manually authenticate everytime you join a server."),
+        SEMI_AUTOMATIC("Semi Automatic", "Remembers servers where authentication succeeded and tries to authenticate automatically on join."),
+        AUTOMATIC("Automatic", "Tries to authenticate automatically on every server you join.");
 
         private final String displayName;
         private final String description;
