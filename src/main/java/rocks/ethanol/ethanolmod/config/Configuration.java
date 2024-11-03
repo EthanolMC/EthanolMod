@@ -20,6 +20,7 @@ public class Configuration {
     public static final boolean DEFAULT_DISPLAY_COMMAND_SEND_WARNING = true;
     public static final boolean DEFAULT_DISPLAY_VANISHED_WARNING = true;
     public static final boolean DEFAULT_INFINITE_COMMAND_INPUT_LENGTH = true;
+    public static final long DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION = 10_000L;
 
     private final Path file;
     private String commandPrefix;
@@ -27,6 +28,7 @@ public class Configuration {
     private boolean displayCommandSendWarning;
     private boolean displayVanishedWarning;
     private boolean infiniteCommandInputLength;
+    private long detectionNotificationDisplayDuration;
 
     public Configuration(final Path file) {
         this.file = file;
@@ -35,6 +37,7 @@ public class Configuration {
         this.displayCommandSendWarning = Configuration.DEFAULT_DISPLAY_COMMAND_SEND_WARNING;
         this.displayVanishedWarning = Configuration.DEFAULT_DISPLAY_VANISHED_WARNING;
         this.infiniteCommandInputLength = Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH;
+        this.detectionNotificationDisplayDuration = Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION;
     }
 
     public final void load() throws IOException {
@@ -64,6 +67,9 @@ public class Configuration {
             if (data.has("infiniteCommandInputLength")) {
                 this.infiniteCommandInputLength = data.get("infiniteCommandInputLength").getAsBoolean();
             }
+            if (data.has("detectionNotificationDisplayDuration")) {
+                this.detectionNotificationDisplayDuration = data.get("detectionNotificationDisplayDuration").getAsLong();
+            }
         }
     }
 
@@ -78,6 +84,7 @@ public class Configuration {
         output.addProperty("displayCommandSendWarning", this.displayCommandSendWarning);
         output.addProperty("displayVanishedWarning", this.displayVanishedWarning);
         output.addProperty("infiniteCommandInputLength", this.infiniteCommandInputLength);
+        output.addProperty("detectionNotificationDisplayDuration", this.detectionNotificationDisplayDuration);
 
         Files.writeString(this.file, Configuration.GSON.toJson(output), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
     }
@@ -120,6 +127,14 @@ public class Configuration {
 
     public final void setInfiniteCommandInputLength(final boolean infiniteCommandInputLength) {
         this.infiniteCommandInputLength = infiniteCommandInputLength;
+    }
+
+    public final long getDetectionNotificationDisplayDuration() {
+        return this.detectionNotificationDisplayDuration;
+    }
+
+    public final void setDetectionNotificationDisplayDuration(final long detectionNotificationDisplayDuration) {
+        this.detectionNotificationDisplayDuration = detectionNotificationDisplayDuration;
     }
 
     public enum ConfigButtonPosition {

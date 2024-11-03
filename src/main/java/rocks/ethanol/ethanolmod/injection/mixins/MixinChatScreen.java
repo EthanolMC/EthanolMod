@@ -44,7 +44,7 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
 
     @Inject(method = "sendMessage", at = @At("HEAD"), cancellable = true)
     private void handleEthanolCommand(final String message, final boolean addToHistory, final CallbackInfo ci) {
-        if (this.mc.isIntegratedServerRunning()) {
+        if (mc.isIntegratedServerRunning()) {
             return;
         }
 
@@ -60,21 +60,21 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
             return;
         }
 
-        this.mc.inGameHud.getChatHud().addToMessageHistory(message);
-        this.mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundCommandPayload(command)));
+        mc.inGameHud.getChatHud().addToMessageHistory(message);
+        mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundCommandPayload(command)));
         ci.cancel();
     }
 
     @Inject(method = "render", at = @At(value = "RETURN"))
     public final void displayEthanolModWarningsAndSetMaxChatInputLength(final DrawContext context, final int mouseX, final int mouseY, final float delta, final CallbackInfo info) {
-        if (this.mc.isIntegratedServerRunning()) {
+        if (mc.isIntegratedServerRunning()) {
             return;
         }
         final String text = this.chatField.getText();
         if (text.isEmpty()) return;
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         final Configuration configuration = ethanolMod.getConfiguration();
-        final TextRenderer textRenderer = this.mc.textRenderer;
+        final TextRenderer textRenderer = mc.textRenderer;
         final int color = 0xFF0000;
         final boolean shadow = true;
         final int x = this.chatField.getX() + 2;

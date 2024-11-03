@@ -15,7 +15,7 @@ public class JoinEventHandler implements ClientPlayConnectionEvents.Join, Minecr
 
     @Override
     public final void onPlayReady(final ClientPlayNetworkHandler handler, final PacketSender sender, final MinecraftClient client) {
-        if (this.mc.isIntegratedServerRunning()) {
+        if (mc.isIntegratedServerRunning()) {
             return;
         }
         final AuthOptions options = EthanolMod.getInstance().getAuthOptions();

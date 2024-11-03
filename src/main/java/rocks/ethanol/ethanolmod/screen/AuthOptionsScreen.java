@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
+import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
@@ -23,7 +24,7 @@ public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
     private int tryAuthenticateButtonDisabledTicks;
 
     public AuthOptionsScreen(final Screen parentScreen) {
-        super(Text.literal("Auth options").formatted(Formatting.UNDERLINE));
+        super(Text.literal("Ethanol Auth Options").formatted(Formatting.UNDERLINE));
         this.parentScreen = parentScreen;
         this.tryAuthenticateButtonDisabledTicks = 0;
     }
@@ -36,21 +37,21 @@ public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
         int y = (this.height / 2 - 50) + 14;
 
         final ButtonWidget openConfigButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Open auth key pairs directory"
+                "Open Auth Key Pairs Directory"
         ), (button) -> Util.getOperatingSystem().open(EthanolMod.getInstance().getAuthKeyPairs().getDirectory())).position(x, y).width(buttonWidth).build());
-        openConfigButton.setTooltip(Tooltip.of(Text.of("Open the auth key pairs directory")));
+        openConfigButton.setTooltip(Tooltip.of(Text.of("Open the auth key pairs directory.")));
         y += offsetY;
 
         this.tryAuthenticateButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Try authenticate"
+                "Try Authenticate"
         ), (button) -> {
-            if (this.mc.getNetworkHandler() != null && !EthanolMod.getInstance().isInstalled()) {
-                this.mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundAuthInitPacket(EthanolMod.getInstance().getAuthKeyPairs().getKeyPairs().stream().map(AuthKeyPair::hash).toArray(byte[][]::new))));
+            if (mc.getNetworkHandler() != null && !EthanolMod.getInstance().isInstalled()) {
+                mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundAuthInitPacket(EthanolMod.getInstance().getAuthKeyPairs().getKeyPairs().stream().map(AuthKeyPair::hash).toArray(byte[][]::new))));
                 this.tryAuthenticateButtonDisabledTicks = 20;
                 button.active = false;
             }
         }).position(x, y).width(buttonWidth).build());
-        this.tryAuthenticateButton.setTooltip(Tooltip.of(Text.of("Tries to authenticate you on the current server")));
+        this.tryAuthenticateButton.setTooltip(Tooltip.of(Text.of("Tries to authenticate you on the current server.")));
         this.tryAuthenticateButton.active = AuthOptionsScreen.shouldTryAuthenticateButtonBeActive();
         y += offsetY;
 
@@ -72,13 +73,20 @@ public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
         y += offsetY;
 
         this.resetKnownHostsButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Reset known hosts"
+                "Reset Known Hosts"
         ), (button) -> {
             EthanolMod.getInstance().getAuthOptions().getKnownHosts().clear();
             AuthOptionsScreen.syncResetKnownHostsButton(button);
         }).position(x, y).width(buttonWidth).build());
-        this.resetKnownHostsButton.setTooltip(Tooltip.of(Text.of("Reset known hosts used for semi automatic mode")));
+        this.resetKnownHostsButton.setTooltip(Tooltip.of(Text.of("Reset known hosts used for semi automatic mode.")));
         AuthOptionsScreen.syncResetKnownHostsButton(this.resetKnownHostsButton);
+
+        this.addDrawableChild(
+                ButtonWidget
+                        .builder(ScreenTexts.BACK, (button) -> this.close())
+                        .dimensions(2, this.height - 22, 70, 20)
+                        .build()
+        );
     }
 
     private static void syncResetKnownHostsButton(final ButtonWidget widget) {
@@ -113,7 +121,7 @@ public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
 
         context.drawTextWithShadow(
                 textRenderer,
-                "Loaded auth key pairs: ".concat(String.valueOf(EthanolMod.getInstance().getAuthKeyPairs().getKeyPairs().size())),
+                "Loaded Auth Key Pairs: ".concat(String.valueOf(EthanolMod.getInstance().getAuthKeyPairs().getKeyPairs().size())),
                 4,
                 4,
                 0xFFFFFF
@@ -121,7 +129,7 @@ public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
 
         context.drawTextWithShadow(
                 textRenderer,
-                "Known hosts: ".concat(String.valueOf(EthanolMod.getInstance().getAuthOptions().getKnownHosts().size())),
+                "Known Hosts: ".concat(String.valueOf(EthanolMod.getInstance().getAuthOptions().getKnownHosts().size())),
                 4,
                 4 + textRenderer.fontHeight + 4,
                 0xFFFFFF

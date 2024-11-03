@@ -44,7 +44,7 @@ public abstract class MixinChatInputSuggester implements MinecraftWrapper {
 
     @Inject(method = "refresh", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/StringReader;canRead()Z", remap = false), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
     public final void suggestClientCommands(final CallbackInfo info, final String string, final StringReader reader) {
-        if (this.mc.isIntegratedServerRunning()) {
+        if (mc.isIntegratedServerRunning()) {
             return;
         }
         final EthanolMod ethanolMod = EthanolMod.getInstance();
@@ -52,7 +52,7 @@ public abstract class MixinChatInputSuggester implements MinecraftWrapper {
         if (commandDispatcher == null) return;
         final String prefix = ethanolMod.getConfiguration().getCommandPrefix();
         final int length = prefix.length();
-        if (reader.canRead(length) && reader.getString().startsWith(prefix, reader.getCursor()) && this.mc.currentScreen instanceof ChatScreen) {
+        if (reader.canRead(length) && reader.getString().startsWith(prefix, reader.getCursor()) && mc.currentScreen instanceof ChatScreen) {
             reader.setCursor(reader.getCursor() + length);
             if (this.parse == null) {
                 this.parse = commandDispatcher.parse(reader, ethanolMod.getCommandSource());

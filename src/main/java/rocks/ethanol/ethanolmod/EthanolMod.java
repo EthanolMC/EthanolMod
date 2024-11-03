@@ -56,7 +56,7 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
     public void onInitializeClient() {
         EthanolMod.instance = this;
 
-        final Path directory = this.mc.runDirectory.toPath().resolve(EthanolMod.ID);
+        final Path directory = mc.runDirectory.toPath().resolve(EthanolMod.ID);
         if (!Files.isDirectory(directory)) {
             try {
                 Files.createDirectories(directory);
