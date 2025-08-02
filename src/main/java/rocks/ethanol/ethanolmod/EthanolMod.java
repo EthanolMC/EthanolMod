@@ -48,7 +48,7 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
         this.send = false;
         this.vanished = false;
         this.showStart = 0L;
-        this.commandSource = new ClientCommandSource(null, MinecraftClient.getInstance());
+        this.commandSource = new ClientCommandSource(null, MinecraftClient.getInstance(), false);
         this.pendingRequests = new HashMap<>();
     }
 
