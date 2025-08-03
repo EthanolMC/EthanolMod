@@ -15,9 +15,12 @@ public class JoinEventHandler implements ClientPlayConnectionEvents.Join, Minecr
 
     @Override
     public final void onPlayReady(final ClientPlayNetworkHandler handler, final PacketSender sender, final MinecraftClient client) {
+        EthanolMod.getInstance().resetModState(); // we'll want to reset the mod state here
+
         if (mc.isIntegratedServerRunning()) {
             return;
         }
+
         final AuthOptions options = EthanolMod.getInstance().getAuthOptions();
         switch (options.getMode()) {
             case SEMI_AUTOMATIC -> {

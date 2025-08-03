@@ -216,4 +216,14 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
     public final void setAuthEnabled(final boolean authEnabled) {
         this.authEnabled = authEnabled;
     }
+
+    public void resetModState() {
+        this.setInstalled(false);
+        this.setSend(false);
+        this.setAuthEnabled(false);
+        this.setVanished(false);
+        this.resetCommandDispatcher();
+        this.getPendingRequests().clear();
+    }
+
 }

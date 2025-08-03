@@ -14,6 +14,7 @@ public class WorldTickEventHandler implements ClientTickEvents.StartWorldTick, M
         if (mc.isIntegratedServerRunning()) {
             return;
         }
+
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         if (ethanolMod.isInstalled() && !ethanolMod.hasSend()) {
             ethanolMod.setSend(true);
