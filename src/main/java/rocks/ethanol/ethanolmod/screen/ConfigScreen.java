@@ -1,6 +1,5 @@
 package rocks.ethanol.ethanolmod.screen;
 
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -13,10 +12,17 @@ import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.config.Configuration;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
+import java.awt.*;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 public class ConfigScreen extends Screen implements MinecraftWrapper {
 
-    private final Screen parentScreen;
+    private static final int CHILD_WIDTH = 200;
+    private static final int CHILD_OFFSET_Y = 22;
+    private static final int TEXT_FIELD_HEIGHT = 20;
 
+    private final Screen parentScreen;
     private TextFieldWidget commandPrefixField;
     private TextFieldWidget detectionNotificationDisplayDurationField;
 
@@ -27,161 +33,130 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
 
     @Override
     protected final void init() {
-        final TextRenderer textRenderer = this.textRenderer;
-
         final Configuration configuration = EthanolMod.getInstance().getConfiguration();
+        final int centerX = this.width / 2;
+        final int x = centerX - (CHILD_WIDTH / 2);
+        int y = this.height / 2 - 70;
 
-        this.commandPrefixField = new TextFieldWidget(
-                textRenderer,
-                this.width / 2 - 100,
-                this.height / 2 - 70,
-                200,
-                20,
-                Text.of("Command Prefix")
+        this.commandPrefixField = this.addTextField(
+                centerX - 100, y,
+                configuration.getCommandPrefix(),
+                "The prefix to use Ethanol commands.",
+                25,
+                text -> !text.startsWith("/")
         );
-        this.commandPrefixField.setText(configuration.getCommandPrefix());
-        this.commandPrefixField.setTooltip(Tooltip.of(Text.of("The prefix to use Ethanol commands.")));
-        this.commandPrefixField.setMaxLength(25);
-        this.commandPrefixField.setChangedListener(text -> {
-            if (text.startsWith("/")) {
-                this.commandPrefixField.setEditableColor(0xFF0000);
-            } else {
-                this.commandPrefixField.setEditableColor(0xFFFFFF);
-            }
-            configuration.setCommandPrefix(text);
-        });
         this.addSelectableChild(this.commandPrefixField);
+        y += CHILD_OFFSET_Y + mc.textRenderer.fontHeight + 5;
 
-        this.detectionNotificationDisplayDurationField = new TextFieldWidget(
-                textRenderer,
-                this.width / 2 - 100,
-                this.height / 2 - 30,
-                200,
+        this.detectionNotificationDisplayDurationField = this.addTextField(
+                centerX - 100, y,
+                String.valueOf(configuration.getDetectionNotificationDisplayDuration()),
+                "The duration in milliseconds to display the Ethanol detection notification.",
                 20,
-                Text.of("Detection Notification Display Duration")
+                text -> text.isEmpty() || text.matches("\\d+")
         );
-        this.detectionNotificationDisplayDurationField.setText(String.valueOf(configuration.getDetectionNotificationDisplayDuration()));
-        this.detectionNotificationDisplayDurationField.setTooltip(Tooltip.of(Text.of("The duration in milliseconds to display the Ethanol detection notification.")));
-        this.detectionNotificationDisplayDurationField.setMaxLength(25);
         this.detectionNotificationDisplayDurationField.setChangedListener(text -> {
             try {
-                configuration.setDetectionNotificationDisplayDuration(Long.parseLong(this.detectionNotificationDisplayDurationField.getText()));
-                this.detectionNotificationDisplayDurationField.setEditableColor(0xFFFFFF);
-            } catch (final NumberFormatException ignored) {
-                this.detectionNotificationDisplayDurationField.setEditableColor(0xFF0000);
+                long value = Long.parseLong(text);
+                configuration.setDetectionNotificationDisplayDuration(value);
+                this.detectionNotificationDisplayDurationField.setEditableColor(Color.WHITE.getRGB());
+            } catch (NumberFormatException ignored) {
+                this.detectionNotificationDisplayDurationField.setEditableColor(Color.RED.getRGB());
             }
         });
         this.addSelectableChild(this.detectionNotificationDisplayDurationField);
+        y += CHILD_OFFSET_Y + 5;
 
-        final int buttonWidth = 190;
-        final int startY = this.detectionNotificationDisplayDurationField.getY() + this.detectionNotificationDisplayDurationField.getHeight();
-        final int x = this.width / 2 - 95;
-        final int offsetY = 22;
-        int y = startY + 14;
+        // buttons
+        y = this.addButton(
+                x, y,
+                "Config Button Position",
+                "The position of the config button in the game menu screen and the multiplayer screen.",
+                configuration.getConfigButtonPosition().getDisplayName(),
+                () -> {
+                    var position = configuration.getConfigButtonPosition();
+                    var values = Configuration.ConfigButtonPosition.values();
+                    var next = values[(position.ordinal() + 1) % values.length];
+                    configuration.setConfigButtonPosition(next);
+                    return next.getDisplayName();
+                }
+        );
 
-        final ButtonWidget configPositionButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Config Button Position: ".concat(configuration.getConfigButtonPosition().getDisplayName())
-        ), (button) -> {
-            Configuration.ConfigButtonPosition position = configuration.getConfigButtonPosition();
-            final Configuration.ConfigButtonPosition[] values = Configuration.ConfigButtonPosition.values();
-            final int nextIndex = position.ordinal() + 1;
-            if (nextIndex < values.length) {
-                configuration.setConfigButtonPosition(position = values[nextIndex]);
-            } else {
-                configuration.setConfigButtonPosition(position = values[0]);
-            }
-            button.setMessage(Text.of(
-                    "Config Button Position: ".concat(position.getDisplayName())
-            ));
-        }).position(x, y).width(buttonWidth).build());
-        configPositionButton.setTooltip(Tooltip.of(Text.of("The position of the config button in the game menu screen and the multiplayer screen.")));
-        y += offsetY;
+        y = this.addButton(
+                x, y,
+                "Display Command Send Warning",
+                "Displays a warning when sending Ethanol commands on a server without Ethanol.",
+                String.valueOf(configuration.getDisplayCommandSendWarning()),
+                () -> {
+                    final boolean value = !configuration.getDisplayCommandSendWarning();
+                    configuration.setDisplayCommandSendWarning(value);
+                    return String.valueOf(value);
+                }
+        );
 
-        final ButtonWidget displayCommandSendWarningButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Display Command Send Warning: ".concat(String.valueOf(configuration.getDisplayCommandSendWarning()))
-        ), (button) -> {
-            configuration.setDisplayCommandSendWarning(!configuration.getDisplayCommandSendWarning());
-            button.setMessage(Text.of(
-                    "Display Command Send Warning: ".concat(String.valueOf(configuration.getDisplayCommandSendWarning()))
-            ));
-        }).position(x, y).width(buttonWidth).build());
-        displayCommandSendWarningButton.setTooltip(Tooltip.of(Text.of("Displays a warning upon trying to send messages recognized as ethanol commands on a server where Ethanol is not installed.")));
-        y += offsetY;
+        y = this.addButton(
+                x, y,
+                "Display Vanished Warning",
+                "Displays a warning when trying to send a chat message while vanished.",
+                String.valueOf(configuration.getDisplayVanishedWarning()),
+                () -> {
+                    final boolean value = !configuration.getDisplayVanishedWarning();
+                    configuration.setDisplayVanishedWarning(value);
+                    return String.valueOf(value);
+                }
+        );
 
-        final ButtonWidget displayVanishedWarningButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Display Vanished Warning: ".concat(String.valueOf(configuration.getDisplayVanishedWarning()))
-        ), (button) -> {
-            configuration.setDisplayVanishedWarning(!configuration.getDisplayVanishedWarning());
-            button.setMessage(Text.of(
-                    "Display Vanished Warning: ".concat(String.valueOf(configuration.getDisplayVanishedWarning()))
-            ));
-        }).position(x, y).width(buttonWidth).build());
-        displayVanishedWarningButton.setTooltip(Tooltip.of(Text.of("Displays a warning when trying to send a chat message while being vanished.")));
-        y += offsetY;
+        this.addButton(
+                x, y,
+                "Infinite Command Input Length",
+                "Allows infinite characters in the chat input when using Ethanol commands.",
+                String.valueOf(configuration.getInfiniteCommandInputLength()),
+                () -> {
+                    final boolean value = !configuration.getInfiniteCommandInputLength();
+                    configuration.setInfiniteCommandInputLength(value);
+                    return String.valueOf(value);
+                }
+        );
 
-        final ButtonWidget infiniteCommandInputLengthButton = this.addDrawableChild(ButtonWidget.builder(Text.of(
-                "Infinite Command Input Length: ".concat(String.valueOf(configuration.getInfiniteCommandInputLength()))
-        ), (button) -> {
-            configuration.setInfiniteCommandInputLength(!configuration.getInfiniteCommandInputLength());
-            button.setMessage(Text.of(
-                    "Infinite Command Input Length: ".concat(String.valueOf(configuration.getInfiniteCommandInputLength()))
-            ));
-        }).position(x, y).width(buttonWidth).build());
-        infiniteCommandInputLengthButton.setTooltip(Tooltip.of(Text.of("This will allow you to type an infinite amount of characters in the chat input field when it starts with the Ethanol prefix and when Ethanol is installed on the server.")));
-
-        final ButtonWidget resetConfigButton = this.addDrawableChild(ButtonWidget.builder(Text.of("Reset Config"), (button) -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.of("Reset Config"), button -> {
             configuration.setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
             configuration.setConfigButtonPosition(Configuration.DEFAULT_BUTTON_POSITION);
             configuration.setDisplayCommandSendWarning(Configuration.DEFAULT_DISPLAY_COMMAND_SEND_WARNING);
             configuration.setDisplayVanishedWarning(Configuration.DEFAULT_DISPLAY_VANISHED_WARNING);
             configuration.setInfiniteCommandInputLength(Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH);
             configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
+
             this.commandPrefixField.setText(Configuration.DEFAULT_COMMAND_PREFIX);
             this.detectionNotificationDisplayDurationField.setText(String.valueOf(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION));
-            configPositionButton.setMessage(Text.of(
-                    "Config Button Position: ".concat(Configuration.DEFAULT_BUTTON_POSITION.getDisplayName())
-            ));
-            displayCommandSendWarningButton.setMessage(Text.of(
-                    "Display Command Send Warning: ".concat(String.valueOf(Configuration.DEFAULT_DISPLAY_COMMAND_SEND_WARNING))
-            ));
-            displayVanishedWarningButton.setMessage(Text.of(
-                    "Display Vanished Warning: ".concat(String.valueOf(Configuration.DEFAULT_DISPLAY_VANISHED_WARNING))
-            ));
-            infiniteCommandInputLengthButton.setMessage(Text.of(
-                    "Infinite Command Input Length: ".concat(String.valueOf(Configuration.DEFAULT_INFINITE_COMMAND_INPUT_LENGTH))
-            ));
-        }).dimensions(this.width - 72, this.height - 22, 70, 20).build());
-        resetConfigButton.setTooltip(Tooltip.of(Text.literal("WARNING: This will reset all of your settings to the default values.").formatted(Formatting.RED)));
+            this.init();
+        }).dimensions(this.width - 72, this.height - 22, 70, 20).build()).setTooltip(Tooltip.of(Text.literal("WARNING: This will reset all settings.").formatted(Formatting.RED)));
 
-        this.addDrawableChild(
-                ButtonWidget
-                        .builder(ScreenTexts.BACK, (button) -> this.close())
-                        .dimensions(2, this.height - 22, 70, 20)
-                        .build()
-        );
+        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.BACK, b -> this.close())
+                .dimensions(2, this.height - 22, 70, 20).build());
     }
 
     @Override
     public final void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
         super.render(context, mouseX, mouseY, delta);
-        final TextRenderer textRenderer = this.textRenderer;
-        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, 16777215);
+        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, Color.WHITE.getRGB());
 
+        // render cmd prefix text
         context.drawTextWithShadow(
                 textRenderer,
                 "Command Prefix",
-                this.commandPrefixField.getX(),
-                this.commandPrefixField.getY() - textRenderer.fontHeight - 2,
-                16777215
+                this.commandPrefixField.getX() + 1,
+                this.commandPrefixField.getY() - textRenderer.fontHeight - 1,
+                Color.WHITE.getRGB()
         );
         this.commandPrefixField.render(context, mouseX, mouseY, delta);
 
+        // render detection notification display duration text
         context.drawTextWithShadow(
                 textRenderer,
                 "Detection Notification Display Duration",
-                this.detectionNotificationDisplayDurationField.getX(),
-                this.detectionNotificationDisplayDurationField.getY() - textRenderer.fontHeight - 2,
-                16777215
+                this.detectionNotificationDisplayDurationField.getX() + 1,
+                this.detectionNotificationDisplayDurationField.getY() - textRenderer.fontHeight - 1,
+                Color.WHITE.getRGB()
         );
         this.detectionNotificationDisplayDurationField.render(context, mouseX, mouseY, delta);
     }
@@ -189,27 +164,35 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     @Override
     public final void close() {
         final Configuration configuration = EthanolMod.getInstance().getConfiguration();
-        final String commandPrefix = this.commandPrefixField.getText();
-        if (commandPrefix.isEmpty()) {
-            configuration.setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
-        } else {
-            if (commandPrefix.startsWith("/")) {
-                configuration.setCommandPrefix(Configuration.DEFAULT_COMMAND_PREFIX);
-            } else {
-                configuration.setCommandPrefix(commandPrefix);
-            }
-        }
+        final String prefix = commandPrefixField.getText();
+        configuration.setCommandPrefix(prefix.isEmpty() ? Configuration.DEFAULT_COMMAND_PREFIX : prefix);
+
+        // sanitize
         final String detectionNotificationDisplayDuration = this.detectionNotificationDisplayDurationField.getText();
-        if (detectionNotificationDisplayDuration.isEmpty()) {
+        try {
+            configuration.setDetectionNotificationDisplayDuration(Long.parseLong(detectionNotificationDisplayDuration));
+        } catch (final NumberFormatException ignored) {
             configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
-        } else {
-            try {
-                configuration.setDetectionNotificationDisplayDuration(Long.parseLong(detectionNotificationDisplayDuration));
-            } catch (final NumberFormatException ignored) {
-                configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
-            }
         }
+
         this.client.setScreen(this.parentScreen);
+    }
+
+    private TextFieldWidget addTextField(final int x, final int y, final String text, final String tooltip, final int maxLength, final Predicate<String> predicate) {
+        final TextFieldWidget field = new TextFieldWidget(textRenderer, x, y, CHILD_WIDTH, TEXT_FIELD_HEIGHT, Text.of(""));
+        field.setTooltip(Tooltip.of(Text.of(tooltip)));
+        field.setText(text);
+        field.setMaxLength(maxLength);
+        field.setTextPredicate(predicate);
+        return field;
+    }
+
+    private int addButton(final int x, final int y, final String label, String tooltip, final String initial, final Supplier<String> value) {
+        final ButtonWidget button = this.addDrawableChild(ButtonWidget.builder(Text.of(label + ": " + initial), btn -> {
+            btn.setMessage(Text.of(label + ": " + value.get()));
+        }).position(x, y).width(CHILD_WIDTH).build());
+        button.setTooltip(Tooltip.of(Text.of(tooltip)));
+        return y + CHILD_OFFSET_Y;
     }
 
 }
