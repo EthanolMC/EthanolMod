@@ -17,6 +17,7 @@ public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrappe
         if (mc.isIntegratedServerRunning()) {
             return;
         }
+
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         if (ethanolMod.isInstalled()) {
             final TextRenderer textRenderer = mc.textRenderer;
@@ -31,6 +32,7 @@ public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrappe
                         true
                 );
             }
+
             if (ethanolMod.isVanished()) {
                 final Text text = Text.of("Vanished");
                 drawContext.drawText(
@@ -38,7 +40,7 @@ public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrappe
                         text,
                         drawContext.getScaledWindowWidth() - textRenderer.getWidth(text),
                         bottom,
-                        0xFF0000,
+                        Color.RED.getRGB(),
                         true
                 );
             }
