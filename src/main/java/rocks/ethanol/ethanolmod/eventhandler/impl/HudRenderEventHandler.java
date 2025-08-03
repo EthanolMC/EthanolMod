@@ -8,6 +8,8 @@ import net.minecraft.text.Text;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
+import java.awt.*;
+
 public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrapper {
 
     @Override
@@ -25,7 +27,7 @@ public class HudRenderEventHandler implements HudRenderCallback, MinecraftWrappe
                         Text.of(ethanolMod.isAuthEnabled() ? "Ethanol detected (authenticated)" : "Ethanol detected"),
                         0,
                         bottom,
-                        0xFFFFFF,
+                        Color.WHITE.getRGB(),
                         true
                 );
             }
