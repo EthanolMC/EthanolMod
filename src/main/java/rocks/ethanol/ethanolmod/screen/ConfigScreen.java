@@ -1,6 +1,5 @@
 package rocks.ethanol.ethanolmod.screen;
 
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -19,11 +18,11 @@ import java.util.function.Supplier;
 
 public class ConfigScreen extends Screen implements MinecraftWrapper {
 
-    private static final int BUTTON_OFFSET_Y = 22;
-    private static final int BUTTON_WIDTH = 190;
+    private static final int CHILD_WIDTH = 200;
+    private static final int CHILD_OFFSET_Y = 22;
+    private static final int TEXT_FIELD_HEIGHT = 20;
 
     private final Screen parentScreen;
-
     private TextFieldWidget commandPrefixField;
     private TextFieldWidget detectionNotificationDisplayDurationField;
 
@@ -35,32 +34,27 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     @Override
     protected final void init() {
         final Configuration configuration = EthanolMod.getInstance().getConfiguration();
+        final int centerX = this.width / 2;
+        final int x = centerX - (CHILD_WIDTH / 2);
+        int y = this.height / 2 - 70;
 
-        this.commandPrefixField = new TextFieldWidget(
-                textRenderer,
-                this.width / 2 - 100,
-                this.height / 2 - 70,
-                200,
-                20,
-                Text.of("Command Prefix")
+        this.commandPrefixField = this.addTextField(
+                centerX - 100, y,
+                configuration.getCommandPrefix(),
+                "The prefix to use Ethanol commands.",
+                25,
+                text -> !text.startsWith("/")
         );
-        this.commandPrefixField.setText(configuration.getCommandPrefix());
-        this.commandPrefixField.setTooltip(Tooltip.of(Text.of("The prefix to use Ethanol commands.")));
-        this.commandPrefixField.setMaxLength(25);
-        this.commandPrefixField.setTextPredicate(text -> !text.startsWith("/"));
         this.addSelectableChild(this.commandPrefixField);
+        y += CHILD_OFFSET_Y + mc.textRenderer.fontHeight + 5;
 
-        this.detectionNotificationDisplayDurationField = new TextFieldWidget(
-                textRenderer,
-                this.width / 2 - 100,
-                this.height / 2 - 30,
-                200,
+        this.detectionNotificationDisplayDurationField = this.addTextField(
+                centerX - 100, y,
+                String.valueOf(configuration.getDetectionNotificationDisplayDuration()),
+                "The duration in milliseconds to display the Ethanol detection notification.",
                 20,
-                Text.of("Detection Notification Display Duration")
+                text -> text.isEmpty() || text.matches("\\d+")
         );
-        this.detectionNotificationDisplayDurationField.setText(String.valueOf(configuration.getDetectionNotificationDisplayDuration()));
-        this.detectionNotificationDisplayDurationField.setTooltip(Tooltip.of(Text.of("The duration in milliseconds to display the Ethanol detection notification.")));
-        this.detectionNotificationDisplayDurationField.setMaxLength(20);
         this.detectionNotificationDisplayDurationField.setChangedListener(text -> {
             try {
                 long value = Long.parseLong(text);
@@ -70,14 +64,11 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
                 this.detectionNotificationDisplayDurationField.setEditableColor(Color.RED.getRGB());
             }
         });
-        this.detectionNotificationDisplayDurationField.setTextPredicate(text -> text.isEmpty() || text.matches("\\d+"));
         this.addSelectableChild(this.detectionNotificationDisplayDurationField);
+        y += CHILD_OFFSET_Y + 5;
 
-        final int startY = this.detectionNotificationDisplayDurationField.getY() + this.detectionNotificationDisplayDurationField.getHeight();
-        final int x = this.width / 2 - 95;
-        int y = startY + 14;
-
-        y = addButton(
+        // buttons
+        y = this.addButton(
                 x, y,
                 "Config Button Position",
                 "The position of the config button in the game menu screen and the multiplayer screen.",
@@ -91,37 +82,37 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
                 }
         );
 
-        y = addButton(
+        y = this.addButton(
                 x, y,
                 "Display Command Send Warning",
                 "Displays a warning when sending Ethanol commands on a server without Ethanol.",
                 String.valueOf(configuration.getDisplayCommandSendWarning()),
                 () -> {
-                    boolean value = !configuration.getDisplayCommandSendWarning();
+                    final boolean value = !configuration.getDisplayCommandSendWarning();
                     configuration.setDisplayCommandSendWarning(value);
                     return String.valueOf(value);
                 }
         );
 
-        y = addButton(
+        y = this.addButton(
                 x, y,
                 "Display Vanished Warning",
                 "Displays a warning when trying to send a chat message while vanished.",
                 String.valueOf(configuration.getDisplayVanishedWarning()),
                 () -> {
-                    boolean value = !configuration.getDisplayVanishedWarning();
+                    final boolean value = !configuration.getDisplayVanishedWarning();
                     configuration.setDisplayVanishedWarning(value);
                     return String.valueOf(value);
                 }
         );
 
-        y = addButton(
+        this.addButton(
                 x, y,
                 "Infinite Command Input Length",
                 "Allows infinite characters in the chat input when using Ethanol commands.",
                 String.valueOf(configuration.getInfiniteCommandInputLength()),
                 () -> {
-                    boolean value = !configuration.getInfiniteCommandInputLength();
+                    final boolean value = !configuration.getInfiniteCommandInputLength();
                     configuration.setInfiniteCommandInputLength(value);
                     return String.valueOf(value);
                 }
@@ -147,24 +138,25 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
     @Override
     public final void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
         super.render(context, mouseX, mouseY, delta);
-        final TextRenderer textRenderer = this.textRenderer;
-        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, 16777215);
+        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, Color.WHITE.getRGB());
 
+        // render cmd prefix text
         context.drawTextWithShadow(
                 textRenderer,
                 "Command Prefix",
-                this.commandPrefixField.getX(),
-                this.commandPrefixField.getY() - textRenderer.fontHeight - 2,
-                16777215
+                this.commandPrefixField.getX() + 1,
+                this.commandPrefixField.getY() - textRenderer.fontHeight - 1,
+                Color.WHITE.getRGB()
         );
         this.commandPrefixField.render(context, mouseX, mouseY, delta);
 
+        // render detection notification display duration text
         context.drawTextWithShadow(
                 textRenderer,
                 "Detection Notification Display Duration",
-                this.detectionNotificationDisplayDurationField.getX(),
-                this.detectionNotificationDisplayDurationField.getY() - textRenderer.fontHeight - 2,
-                16777215
+                this.detectionNotificationDisplayDurationField.getX() + 1,
+                this.detectionNotificationDisplayDurationField.getY() - textRenderer.fontHeight - 1,
+                Color.WHITE.getRGB()
         );
         this.detectionNotificationDisplayDurationField.render(context, mouseX, mouseY, delta);
     }
@@ -175,27 +167,32 @@ public class ConfigScreen extends Screen implements MinecraftWrapper {
         final String prefix = commandPrefixField.getText();
         configuration.setCommandPrefix(prefix.isEmpty() ? Configuration.DEFAULT_COMMAND_PREFIX : prefix);
 
+        // sanitize
         final String detectionNotificationDisplayDuration = this.detectionNotificationDisplayDurationField.getText();
-        if (detectionNotificationDisplayDuration.isEmpty()) {
+        try {
+            configuration.setDetectionNotificationDisplayDuration(Long.parseLong(detectionNotificationDisplayDuration));
+        } catch (final NumberFormatException ignored) {
             configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
-        } else {
-            try {
-                configuration.setDetectionNotificationDisplayDuration(Long.parseLong(detectionNotificationDisplayDuration));
-            } catch (final NumberFormatException ignored) {
-                configuration.setDetectionNotificationDisplayDuration(Configuration.DEFAULT_DETECTION_NOTIFICATION_DISPLAY_DURATION);
-            }
         }
 
         this.client.setScreen(this.parentScreen);
     }
 
+    private TextFieldWidget addTextField(final int x, final int y, final String text, final String tooltip, final int maxLength, final Predicate<String> predicate) {
+        final TextFieldWidget field = new TextFieldWidget(textRenderer, x, y, CHILD_WIDTH, TEXT_FIELD_HEIGHT, Text.of(""));
+        field.setTooltip(Tooltip.of(Text.of(tooltip)));
+        field.setText(text);
+        field.setMaxLength(maxLength);
+        field.setTextPredicate(predicate);
+        return field;
+    }
+
     private int addButton(final int x, final int y, final String label, String tooltip, final String initial, final Supplier<String> value) {
-        ButtonWidget button = this.addDrawableChild(ButtonWidget.builder(Text.of(label + ": " + initial), btn -> {
-            String newValue = value.get();
-            btn.setMessage(Text.of(label + ": " + newValue));
-        }).position(x, y).width(BUTTON_WIDTH).build());
+        final ButtonWidget button = this.addDrawableChild(ButtonWidget.builder(Text.of(label + ": " + initial), btn -> {
+            btn.setMessage(Text.of(label + ": " + value.get()));
+        }).position(x, y).width(CHILD_WIDTH).build());
         button.setTooltip(Tooltip.of(Text.of(tooltip)));
-        return y + BUTTON_OFFSET_Y;
+        return y + CHILD_OFFSET_Y;
     }
 
 }
