@@ -16,6 +16,8 @@ import rocks.ethanol.ethanolmod.auth.key.AuthKeyPair;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundAuthInitPacket;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
+import java.awt.*;
+
 public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
 
     private final Screen parentScreen;
@@ -117,14 +119,14 @@ public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
     public final void render(final DrawContext context, final int mouseX, final int mouseY, final float delta) {
         super.render(context, mouseX, mouseY, delta);
         final TextRenderer textRenderer = this.textRenderer;
-        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, 16777215);
+        context.drawCenteredTextWithShadow(textRenderer, this.title, this.width / 2, 20, Color.WHITE.getRGB());
 
         context.drawTextWithShadow(
                 textRenderer,
                 "Loaded Auth Key Pairs: ".concat(String.valueOf(EthanolMod.getInstance().getAuthKeyPairs().getKeyPairs().size())),
                 4,
                 4,
-                0xFFFFFF
+                Color.WHITE.getRGB()
         );
 
         context.drawTextWithShadow(
@@ -132,7 +134,7 @@ public class AuthOptionsScreen extends Screen implements MinecraftWrapper {
                 "Known Hosts: ".concat(String.valueOf(EthanolMod.getInstance().getAuthOptions().getKnownHosts().size())),
                 4,
                 4 + textRenderer.fontHeight + 4,
-                0xFFFFFF
+                Color.WHITE.getRGB()
         );
     }
 

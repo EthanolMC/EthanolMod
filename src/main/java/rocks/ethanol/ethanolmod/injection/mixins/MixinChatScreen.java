@@ -16,6 +16,8 @@ import rocks.ethanol.ethanolmod.config.Configuration;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundCommandPayload;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
+import java.awt.*;
+
 @Mixin(value = ChatScreen.class, priority = 9969)
 public abstract class MixinChatScreen implements MinecraftWrapper {
 
@@ -75,7 +77,7 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         final Configuration configuration = ethanolMod.getConfiguration();
         final TextRenderer textRenderer = mc.textRenderer;
-        final int color = 0xFF0000;
+        final int color = Color.RED.getRGB();
         final boolean shadow = true;
         final int x = this.chatField.getX() + 2;
         int y = this.chatField.getY() - 22;
