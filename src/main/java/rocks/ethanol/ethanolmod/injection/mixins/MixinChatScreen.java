@@ -1,10 +1,10 @@
 package rocks.ethanol.ethanolmod.injection.mixins;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,9 +14,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.config.Configuration;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundCommandPayload;
+import rocks.ethanol.ethanolmod.screen.Theme;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
-
-import java.awt.*;
 
 @Mixin(value = ChatScreen.class, priority = 9969)
 public abstract class MixinChatScreen implements MinecraftWrapper {
@@ -34,19 +33,19 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
     private static final String ETHANOL_VANISHED_WARNING_2 = "Are you sure you want to send this message in the chat?";
 
     @Shadow
-    protected TextFieldWidget chatField;
+    protected EditBox input;
 
     @Unique
-    private int ethanol$realMaxLength = 0;
+    private int ethanol$realMaxLength = 256;
 
     @Inject(method = "init", at = @At(value = "RETURN"))
     private void setRealMaxLength(final CallbackInfo ci) {
-        this.ethanol$realMaxLength = this.chatField.getMaxLength();
+        this.ethanol$realMaxLength = 256;
     }
 
-    @Inject(method = "sendMessage", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "handleChatInput", at = @At("HEAD"), cancellable = true)
     private void handleEthanolCommand(final String message, final boolean addToHistory, final CallbackInfo ci) {
-        if (mc.isIntegratedServerRunning()) {
+        if (mc.hasSingleplayerServer()) {
             return;
         }
 
@@ -62,44 +61,48 @@ public abstract class MixinChatScreen implements MinecraftWrapper {
             return;
         }
 
-        mc.inGameHud.getChatHud().addToMessageHistory(message);
-        mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundCommandPayload(command)));
+        if (mc.gui != null) {
+            mc.gui.getChat().addRecentChat(message);
+        }
+        if (mc.getConnection() != null) {
+            mc.getConnection().send(new ServerboundCustomPayloadPacket(new ServerboundCommandPayload(command)));
+        }
         ci.cancel();
     }
 
-    @Inject(method = "render", at = @At(value = "RETURN"))
-    public final void displayEthanolModWarningsAndSetMaxChatInputLength(final DrawContext context, final int mouseX, final int mouseY, final float delta, final CallbackInfo info) {
-        if (mc.isIntegratedServerRunning()) {
+    @Inject(method = "extractRenderState", at = @At(value = "RETURN"))
+    public final void displayEthanolModWarningsAndSetMaxChatInputLength(final GuiGraphicsExtractor context, final int mouseX, final int mouseY, final float delta, final CallbackInfo info) {
+        if (mc.hasSingleplayerServer()) {
             return;
         }
-        final String text = this.chatField.getText();
+        final String text = this.input.getValue();
         if (text.isEmpty()) return;
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         final Configuration configuration = ethanolMod.getConfiguration();
-        final TextRenderer textRenderer = mc.textRenderer;
-        final int color = Color.RED.getRGB();
+        final Font textRenderer = mc.font;
+        final int color = Theme.DANGER;
         final boolean shadow = true;
-        final int x = this.chatField.getX() + 2;
-        int y = this.chatField.getY() - 22;
+        final int x = this.input.getX() + 2;
+        int y = this.input.getY() - 22;
         if (text.startsWith(configuration.getCommandPrefix())) {
             if (!ethanolMod.isInstalled()) {
                 if (configuration.getDisplayCommandSendWarning()) {
-                    context.drawText(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_1, x, y, color, shadow);
-                    y += textRenderer.fontHeight;
-                    context.drawText(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_2, x, y, color, shadow);
+                    context.text(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_1, x, y, color, shadow);
+                    y += textRenderer.lineHeight;
+                    context.text(textRenderer, ETHANOL_NOT_INSTALLED_WARNING_2, x, y, color, shadow);
                 }
                 if (configuration.getInfiniteCommandInputLength()) {
-                    this.chatField.setMaxLength(ethanol$realMaxLength);
+                    this.input.setMaxLength(ethanol$realMaxLength);
                 }
             } else if (configuration.getInfiniteCommandInputLength()) {
-                this.chatField.setMaxLength(Integer.MAX_VALUE);
+                this.input.setMaxLength(Integer.MAX_VALUE);
             }
         } else {
             if (ethanolMod.isVanished()) {
                 if (configuration.getDisplayVanishedWarning()) {
-                    context.drawText(textRenderer, ETHANOL_VANISHED_WARNING_1, x, y, color, shadow);
-                    y += textRenderer.fontHeight;
-                    context.drawText(textRenderer, ETHANOL_VANISHED_WARNING_2, x, y, color, shadow);
+                    context.text(textRenderer, ETHANOL_VANISHED_WARNING_1, x, y, color, shadow);
+                    y += textRenderer.lineHeight;
+                    context.text(textRenderer, ETHANOL_VANISHED_WARNING_2, x, y, color, shadow);
                 }
             }
         }

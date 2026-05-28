@@ -3,17 +3,17 @@ package rocks.ethanol.ethanolmod.injection.mixins;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.hud.ChatHud;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.network.ClientCommonNetworkHandler;
-import net.minecraft.client.network.ClientConnectionState;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.command.CommandSource;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.ChatComponent;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.CommonListenerCookie;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -38,37 +38,37 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-@Mixin(ClientPlayNetworkHandler.class)
-public abstract class MixinClientPlayNetworkHandler extends ClientCommonNetworkHandler {
+@Mixin(ClientPacketListener.class)
+public abstract class MixinClientPlayNetworkHandler extends ClientCommonPacketListenerImpl {
 
-    protected MixinClientPlayNetworkHandler(final MinecraftClient client, final ClientConnection connection, final ClientConnectionState connectionState) {
-        super(client, connection, connectionState);
+    protected MixinClientPlayNetworkHandler(final Minecraft client, final Connection connection, final CommonListenerCookie cookie) {
+        super(client, connection, cookie);
     }
 
-    @Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "sendChat", at = @At("HEAD"), cancellable = true)
     private void executeClientCommands(final String message, final CallbackInfo info) {
         final EthanolMod ethanolMod = EthanolMod.getInstance();
-        final CommandDispatcher<CommandSource> commandDispatcher = ethanolMod.getCommandDispatcher();
+        final CommandDispatcher<SharedSuggestionProvider> commandDispatcher = ethanolMod.getCommandDispatcher();
         if (commandDispatcher == null) return;
         final String prefix = ethanolMod.getConfiguration().getCommandPrefix();
-        if (message.startsWith(prefix) && this.client.currentScreen instanceof ChatScreen) {
-            final ChatHud chatHud = this.client.inGameHud.getChatHud();
+        if (message.startsWith(prefix) && this.minecraft.screen instanceof ChatScreen) {
+            final ChatComponent chatHud = this.minecraft.gui.getChat();
             try {
                 commandDispatcher.execute(message.substring(prefix.length()), ethanolMod.getCommandSource());
             } catch (final CommandSyntaxException exception) {
-                chatHud.addMessage(Text.literal("[".concat(EthanolMod.NAME).concat("] Failed to execute command: ").concat(exception.getMessage())));
+                chatHud.addClientSystemMessage(Component.literal("[".concat(EthanolMod.NAME).concat("] Failed to execute command: ").concat(exception.getMessage())));
             }
-            chatHud.addToMessageHistory(message);
+            chatHud.addRecentChat(message);
             info.cancel();
         }
     }
 
-    @Inject(method = "onCustomPayload", at = @At("HEAD"), cancellable = true)
-    private void onCustomPayload(final CustomPayload payload, final CallbackInfo info) {
+    @Inject(method = "handleCustomPayload", at = @At("HEAD"), cancellable = true)
+    private void onCustomPayload(final CustomPacketPayload payload, final CallbackInfo info) {
         switch (payload) {
             case final ClientboundCommandTreePayload commandTreePayload -> EthanolMod.getInstance().updateCommandDispatcher(new CommandDispatcher<>(commandTreePayload.getRoot()));
 
-            case final ClientboundMessagePayload messagePayload -> this.client.inGameHud.getChatHud().addMessage(Text.of(messagePayload.getMessage()));
+            case final ClientboundMessagePayload messagePayload -> this.minecraft.gui.getChat().addClientSystemMessage(Component.literal(messagePayload.getMessage()));
 
             case final ClientboundSuggestionsResponsePayload suggestionsResponsePayload -> {
                 final Map<Long, CompletableFuture<Suggestions>> pendingRequests = EthanolMod.getInstance().getPendingRequests();
@@ -83,8 +83,9 @@ public abstract class MixinClientPlayNetworkHandler extends ClientCommonNetworkH
             case final ClientboundVanishPayload vanishPayload -> EthanolMod.getInstance().setVanished(vanishPayload.isVanished());
 
             case final SharedInitPayload ignored -> {
-                if (EthanolMod.getInstance().isAuthEnabled() && EthanolMod.getInstance().getAuthOptions().getMode() == AuthOptions.Mode.SEMI_AUTOMATIC) {
-                    EthanolMod.getInstance().getAuthOptions().getKnownHosts().add(((ClientPlayNetworkHandler) ((Object) this)).getServerInfo().address);
+                final ClientPacketListener self = (ClientPacketListener) (Object) this;
+                if (EthanolMod.getInstance().isAuthEnabled() && EthanolMod.getInstance().getAuthOptions().getMode() == AuthOptions.Mode.SEMI_AUTOMATIC && self.getServerData() != null) {
+                    EthanolMod.getInstance().getAuthOptions().getKnownHosts().add(self.getServerData().ip);
                 }
 
                 EthanolMod.getInstance().setInstalled(true);
@@ -104,7 +105,7 @@ public abstract class MixinClientPlayNetworkHandler extends ClientCommonNetworkH
                     final Cipher cipher = Cipher.getInstance("RSA");
                     cipher.init(Cipher.DECRYPT_MODE, authKeyPair.keyPair().getPrivate());
                     final byte[] verifyToken = cipher.doFinal(authDataPayload.getEncryptedVerifyToken());
-                    this.sendPacket(new CustomPayloadC2SPacket(new ServerboundAuthResponsePacket(verifyToken)));
+                    this.send(new ServerboundCustomPayloadPacket(new ServerboundAuthResponsePacket(verifyToken)));
                 } catch (final NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
                                IllegalBlockSizeException | BadPaddingException exception) {
                     throw new RuntimeException(exception);

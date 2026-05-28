@@ -1,24 +1,26 @@
 package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 public class ClientboundVanishPayload implements EthanolPayload {
 
-    public static final Id<ClientboundVanishPayload> ID = new Id<>(EthanolPayload.createIdentifier("vanish"));
+    public static final Type<ClientboundVanishPayload> ID = new Type<>(EthanolPayload.createIdentifier("vanish"));
 
-    public static final PacketCodec<PacketByteBuf, ClientboundVanishPayload> CODEC = CustomPayload.codecOf(ClientboundVanishPayload::write, ClientboundVanishPayload::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundVanishPayload> CODEC = StreamCodec.of(
+            (buf, value) -> value.write(buf),
+            ClientboundVanishPayload::new
+    );
 
     private final boolean vanished;
 
-    public ClientboundVanishPayload(final PacketByteBuf buf) {
+    public ClientboundVanishPayload(final RegistryFriendlyByteBuf buf) {
         this.vanished = buf.readByte() == 1;
     }
 
     @Override
-    public final void write(final PacketByteBuf buf) {
+    public final void write(final RegistryFriendlyByteBuf buf) {
         throw EthanolPayload.createReadOnlyException(ClientboundVanishPayload.class);
     }
 
@@ -27,7 +29,7 @@ public class ClientboundVanishPayload implements EthanolPayload {
     }
 
     @Override
-    public final Id<ClientboundVanishPayload> getId() {
+    public final Type<ClientboundVanishPayload> type() {
         return ClientboundVanishPayload.ID;
     }
 

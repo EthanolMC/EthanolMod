@@ -1,28 +1,25 @@
 package rocks.ethanol.ethanolmod.networking.impl.shared;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 public class SharedInitPayload implements EthanolPayload {
 
-    public static final Id<SharedInitPayload> ID = new Id<>(EthanolPayload.createIdentifier("init"));
+    public static final Type<SharedInitPayload> ID = new Type<>(EthanolPayload.createIdentifier("init"));
 
-    public static final PacketCodec<PacketByteBuf, SharedInitPayload> CODEC = CustomPayload.codecOf(
-            SharedInitPayload::write,
-            SharedInitPayload::new
-    );
+    public static final StreamCodec<RegistryFriendlyByteBuf, SharedInitPayload> CODEC = StreamCodec.unit(new SharedInitPayload());
 
     public SharedInitPayload() { }
 
-    public SharedInitPayload(final PacketByteBuf buf) { }
+    public SharedInitPayload(final RegistryFriendlyByteBuf buf) { }
 
     @Override
-    public void write(final PacketByteBuf buf) { }
+    public void write(final RegistryFriendlyByteBuf buf) { }
 
     @Override
-    public Id<SharedInitPayload> getId() {
+    public Type<SharedInitPayload> type() {
         return ID;
     }
 

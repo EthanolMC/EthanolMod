@@ -1,17 +1,17 @@
 package rocks.ethanol.ethanolmod.networking.impl;
 
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
-public interface EthanolPayload extends CustomPayload, MinecraftWrapper {
+public interface EthanolPayload extends CustomPacketPayload, MinecraftWrapper {
 
-    void write(final PacketByteBuf buf);
+    void write(final RegistryFriendlyByteBuf buf);
 
     static Identifier createIdentifier(final String name) {
-        return Identifier.of("ethanol", name);
+        return Identifier.fromNamespaceAndPath("ethanol", name);
     }
 
     static UnsupportedOperationException createWriteOnlyException(final Class<?> clazz) {
@@ -19,7 +19,7 @@ public interface EthanolPayload extends CustomPayload, MinecraftWrapper {
     }
 
     static UnsupportedOperationException createWriteOnlyException(final String name) {
-        return new UnsupportedOperationException(name.concat("is a write-only packet!"));
+        return new UnsupportedOperationException(name.concat(" is a write-only packet!"));
     }
 
     static UnsupportedOperationException createReadOnlyException(final Class<?> clazz) {

@@ -1,24 +1,24 @@
 package rocks.ethanol.ethanolmod.eventhandler.impl;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.networking.impl.shared.SharedInitPayload;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
-public class WorldTickEventHandler implements ClientTickEvents.StartWorldTick, MinecraftWrapper {
+public class WorldTickEventHandler implements ClientTickEvents.StartLevelTick, MinecraftWrapper {
 
     @Override
-    public final void onStartTick(final ClientWorld world) {
-        if (mc.isIntegratedServerRunning()) {
+    public final void onStartTick(final ClientLevel world) {
+        if (mc.hasSingleplayerServer()) {
             return;
         }
 
         final EthanolMod ethanolMod = EthanolMod.getInstance();
-        if (ethanolMod.isInstalled() && !ethanolMod.hasSend()) {
+        if (ethanolMod.isInstalled() && !ethanolMod.hasSend() && mc.getConnection() != null) {
             ethanolMod.setSend(true);
-            mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new SharedInitPayload()));
+            mc.getConnection().send(new ServerboundCustomPayloadPacket(new SharedInitPayload()));
         }
     }
 

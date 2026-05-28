@@ -3,9 +3,7 @@ package rocks.ethanol.ethanolmod;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.suggestion.Suggestions;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientCommandSource;
-import net.minecraft.command.CommandSource;
+import net.minecraft.commands.SharedSuggestionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rocks.ethanol.ethanolmod.auth.AuthOptions;
@@ -39,16 +37,14 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
     private boolean vanished;
     private long showStart;
 
-    private final CommandSource commandSource;
     private final Map<Long, CompletableFuture<Suggestions>> pendingRequests;
-    private CommandDispatcher<CommandSource> commandDispatcher;
+    private CommandDispatcher<SharedSuggestionProvider> commandDispatcher;
 
     public EthanolMod() {
         this.installed = false;
         this.send = false;
         this.vanished = false;
         this.showStart = 0L;
-        this.commandSource = new ClientCommandSource(null, MinecraftClient.getInstance(), false);
         this.pendingRequests = new HashMap<>();
     }
 
@@ -56,7 +52,7 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
     public void onInitializeClient() {
         EthanolMod.instance = this;
 
-        final Path directory = mc.runDirectory.toPath().resolve(EthanolMod.ID);
+        final Path directory = mc.gameDirectory.toPath().resolve(EthanolMod.ID);
         if (!Files.isDirectory(directory)) {
             try {
                 Files.createDirectories(directory);
@@ -189,15 +185,15 @@ public class EthanolMod implements ClientModInitializer, MinecraftWrapper {
         this.showStart = showStart;
     }
 
-    public CommandSource getCommandSource() {
-        return this.commandSource;
+    public SharedSuggestionProvider getCommandSource() {
+        return mc.getConnection() != null ? mc.getConnection().getSuggestionsProvider() : null;
     }
 
-    public CommandDispatcher<CommandSource> getCommandDispatcher() {
+    public CommandDispatcher<SharedSuggestionProvider> getCommandDispatcher() {
         return this.commandDispatcher;
     }
 
-    public void updateCommandDispatcher(final CommandDispatcher<CommandSource> dispatcher) {
+    public void updateCommandDispatcher(final CommandDispatcher<SharedSuggestionProvider> dispatcher) {
         this.commandDispatcher = dispatcher;
     }
 
