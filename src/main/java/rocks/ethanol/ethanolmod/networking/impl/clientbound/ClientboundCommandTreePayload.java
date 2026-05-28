@@ -1,10 +1,9 @@
 package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 
 import com.mojang.brigadier.tree.RootCommandNode;
-import net.minecraft.command.CommandSource;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import rocks.ethanol.ethanolmod.command.CommandTreeReader;
 import rocks.ethanol.ethanolmod.command.argumenttypes.ArgumentTypeRegistry;
 import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
@@ -13,27 +12,30 @@ public class ClientboundCommandTreePayload implements EthanolPayload {
 
     private static final ArgumentTypeRegistry ARGUMENT_TYPE_REGISTRY = new ArgumentTypeRegistry();
 
-    public static final Id<ClientboundCommandTreePayload> ID = new Id<>(EthanolPayload.createIdentifier("command_tree"));
+    public static final Type<ClientboundCommandTreePayload> ID = new Type<>(EthanolPayload.createIdentifier("command_tree"));
 
-    public static final PacketCodec<PacketByteBuf, ClientboundCommandTreePayload> CODEC = CustomPayload.codecOf(ClientboundCommandTreePayload::write, ClientboundCommandTreePayload::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCommandTreePayload> CODEC = StreamCodec.of(
+            (buf, value) -> value.write(buf),
+            ClientboundCommandTreePayload::new
+    );
 
-    private final RootCommandNode<CommandSource> root;
+    private final RootCommandNode<SharedSuggestionProvider> root;
 
-    public ClientboundCommandTreePayload(final PacketByteBuf buf) {
+    public ClientboundCommandTreePayload(final RegistryFriendlyByteBuf buf) {
         this.root = CommandTreeReader.read(buf, ClientboundCommandTreePayload.ARGUMENT_TYPE_REGISTRY);
     }
 
     @Override
-    public final void write(final PacketByteBuf buf) {
+    public final void write(final RegistryFriendlyByteBuf buf) {
         throw EthanolPayload.createReadOnlyException(ClientboundCommandTreePayload.class);
     }
 
-    public final RootCommandNode<CommandSource> getRoot() {
+    public final RootCommandNode<SharedSuggestionProvider> getRoot() {
         return this.root;
     }
 
     @Override
-    public final Id<ClientboundCommandTreePayload> getId() {
+    public final Type<ClientboundCommandTreePayload> type() {
         return ClientboundCommandTreePayload.ID;
     }
 

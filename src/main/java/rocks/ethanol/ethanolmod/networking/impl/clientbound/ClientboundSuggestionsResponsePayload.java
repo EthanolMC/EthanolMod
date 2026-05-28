@@ -3,10 +3,9 @@ package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.text.Text;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 import java.nio.charset.StandardCharsets;
@@ -15,14 +14,17 @@ import java.util.List;
 
 public class ClientboundSuggestionsResponsePayload implements EthanolPayload {
 
-    public static final Id<ClientboundSuggestionsResponsePayload> ID = new Id<>(EthanolPayload.createIdentifier("suggest"));
+    public static final Type<ClientboundSuggestionsResponsePayload> ID = new Type<>(EthanolPayload.createIdentifier("suggest"));
 
-    public static final PacketCodec<PacketByteBuf, ClientboundSuggestionsResponsePayload> CODEC = CustomPayload.codecOf(ClientboundSuggestionsResponsePayload::write, ClientboundSuggestionsResponsePayload::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSuggestionsResponsePayload> CODEC = StreamCodec.of(
+            (buf, value) -> value.write(buf),
+            ClientboundSuggestionsResponsePayload::new
+    );
 
     private final long nonce;
     private final Suggestions suggestions;
 
-    public ClientboundSuggestionsResponsePayload(final PacketByteBuf buf) {
+    public ClientboundSuggestionsResponsePayload(final RegistryFriendlyByteBuf buf) {
         this.nonce = buf.readLong();
 
         if (!buf.readBoolean()) {
@@ -47,14 +49,14 @@ public class ClientboundSuggestionsResponsePayload implements EthanolPayload {
             } else {
                 tooltip = null;
             }
-            suggestions.add(new Suggestion(range, text, Text.of(tooltip)));
+            suggestions.add(new Suggestion(range, text, tooltip == null ? null : Component.literal(tooltip)));
         }
 
         this.suggestions = new Suggestions(range, suggestions);
     }
 
     @Override
-    public final void write(final PacketByteBuf buf) {
+    public final void write(final RegistryFriendlyByteBuf buf) {
         throw EthanolPayload.createReadOnlyException(ClientboundSuggestionsResponsePayload.class);
     }
 
@@ -67,7 +69,7 @@ public class ClientboundSuggestionsResponsePayload implements EthanolPayload {
     }
 
     @Override
-    public final Id<ClientboundSuggestionsResponsePayload> getId() {
+    public final Type<ClientboundSuggestionsResponsePayload> type() {
         return ClientboundSuggestionsResponsePayload.ID;
     }
 

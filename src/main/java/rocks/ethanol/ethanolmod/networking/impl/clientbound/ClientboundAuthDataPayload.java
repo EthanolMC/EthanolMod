@@ -1,21 +1,23 @@
 package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 import rocks.ethanol.ethanolmod.utils.HashUtil;
 
 public class ClientboundAuthDataPayload implements EthanolPayload {
 
-    public static final Id<ClientboundAuthDataPayload> ID = new Id<>(EthanolPayload.createIdentifier("auth_data"));
+    public static final Type<ClientboundAuthDataPayload> ID = new Type<>(EthanolPayload.createIdentifier("auth_data"));
 
-    public static final PacketCodec<PacketByteBuf, ClientboundAuthDataPayload> CODEC = CustomPayload.codecOf(ClientboundAuthDataPayload::write, ClientboundAuthDataPayload::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAuthDataPayload> CODEC = StreamCodec.of(
+            (buf, value) -> value.write(buf),
+            ClientboundAuthDataPayload::new
+    );
 
     private final byte[] publicKeyHash;
     private final byte[] encryptedVerifyToken;
 
-    public ClientboundAuthDataPayload(final PacketByteBuf buf) {
+    public ClientboundAuthDataPayload(final RegistryFriendlyByteBuf buf) {
         this.publicKeyHash = new byte[HashUtil.SHA_256_SIZE];
         buf.readBytes(this.publicKeyHash);
         this.encryptedVerifyToken = new byte[buf.readShort()];
@@ -23,7 +25,7 @@ public class ClientboundAuthDataPayload implements EthanolPayload {
     }
 
     @Override
-    public final void write(final PacketByteBuf buf) {
+    public final void write(final RegistryFriendlyByteBuf buf) {
         throw EthanolPayload.createReadOnlyException(ClientboundAuthDataPayload.class);
     }
 
@@ -36,7 +38,7 @@ public class ClientboundAuthDataPayload implements EthanolPayload {
     }
 
     @Override
-    public final Id<ClientboundAuthDataPayload> getId() {
+    public final Type<ClientboundAuthDataPayload> type() {
         return ClientboundAuthDataPayload.ID;
     }
 

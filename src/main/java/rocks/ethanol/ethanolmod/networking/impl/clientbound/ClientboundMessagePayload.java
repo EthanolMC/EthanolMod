@@ -1,26 +1,28 @@
 package rocks.ethanol.ethanolmod.networking.impl.clientbound;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import rocks.ethanol.ethanolmod.networking.impl.EthanolPayload;
 
 import java.nio.charset.StandardCharsets;
 
 public class ClientboundMessagePayload implements EthanolPayload {
 
-    public static final Id<ClientboundMessagePayload> ID = new Id<>(EthanolPayload.createIdentifier("message"));
+    public static final Type<ClientboundMessagePayload> ID = new Type<>(EthanolPayload.createIdentifier("message"));
 
-    public static final PacketCodec<PacketByteBuf, ClientboundMessagePayload> CODEC = CustomPayload.codecOf(ClientboundMessagePayload::write, ClientboundMessagePayload::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMessagePayload> CODEC = StreamCodec.of(
+            (buf, value) -> value.write(buf),
+            ClientboundMessagePayload::new
+    );
 
     private final String message;
 
-    public ClientboundMessagePayload(final PacketByteBuf buf) {
+    public ClientboundMessagePayload(final RegistryFriendlyByteBuf buf) {
         this.message = new String(EthanolPayload.readBuffer(buf), StandardCharsets.UTF_8);
     }
 
     @Override
-    public final void write(final PacketByteBuf buf) {
+    public final void write(final RegistryFriendlyByteBuf buf) {
         throw EthanolPayload.createReadOnlyException(ClientboundMessagePayload.class);
     }
 
@@ -29,7 +31,7 @@ public class ClientboundMessagePayload implements EthanolPayload {
     }
 
     @Override
-    public final Id<ClientboundMessagePayload> getId() {
+    public final Type<ClientboundMessagePayload> type() {
         return ClientboundMessagePayload.ID;
     }
 

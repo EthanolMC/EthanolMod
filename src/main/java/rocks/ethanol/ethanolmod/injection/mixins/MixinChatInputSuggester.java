@@ -4,65 +4,65 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestions;
-import net.minecraft.client.gui.screen.ChatInputSuggestor;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.command.CommandSource;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.commands.SharedSuggestionProvider;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
 
 import java.util.concurrent.CompletableFuture;
 
-@Mixin(ChatInputSuggestor.class)
+@Mixin(CommandSuggestions.class)
 public abstract class MixinChatInputSuggester implements MinecraftWrapper {
 
     @Shadow
-    private ParseResults<CommandSource> parse;
+    private ParseResults<SharedSuggestionProvider> currentParse;
 
     @Shadow
     @Final
-    TextFieldWidget textField;
+    EditBox input;
 
     @Shadow
-    boolean completingSuggestions;
+    boolean keepSuggestions;
 
     @Shadow
     private CompletableFuture<Suggestions> pendingSuggestions;
 
     @Shadow
-    private ChatInputSuggestor.SuggestionWindow window;
+    private CommandSuggestions.SuggestionsList suggestions;
 
     @Shadow
-    protected abstract void showCommandSuggestions();
+    protected abstract void showSuggestions(boolean hasNewLine);
 
-    @Inject(method = "refresh", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/StringReader;canRead()Z", remap = false), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
-    public final void suggestClientCommands(final CallbackInfo info, final String string, final StringReader reader) {
-        if (mc.isIntegratedServerRunning()) {
+    @Inject(method = "updateCommandInfo", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/StringReader;canRead()Z", remap = false), cancellable = true)
+    public final void suggestClientCommands(final CallbackInfo info) {
+        if (mc.hasSingleplayerServer()) {
             return;
         }
         final EthanolMod ethanolMod = EthanolMod.getInstance();
-        final CommandDispatcher<CommandSource> commandDispatcher = ethanolMod.getCommandDispatcher();
+        final CommandDispatcher<SharedSuggestionProvider> commandDispatcher = ethanolMod.getCommandDispatcher();
         if (commandDispatcher == null) return;
         final String prefix = ethanolMod.getConfiguration().getCommandPrefix();
         final int length = prefix.length();
-        if (reader.canRead(length) && reader.getString().startsWith(prefix, reader.getCursor()) && mc.currentScreen instanceof ChatScreen) {
-            reader.setCursor(reader.getCursor() + length);
-            if (this.parse == null) {
-                this.parse = commandDispatcher.parse(reader, ethanolMod.getCommandSource());
+        final String typed = this.input.getValue();
+        if (typed.startsWith(prefix) && mc.screen instanceof ChatScreen) {
+            final StringReader reader = new StringReader(typed.substring(length));
+            if (this.currentParse == null) {
+                this.currentParse = commandDispatcher.parse(reader, ethanolMod.getCommandSource());
             }
 
-            final int cursor = this.textField.getCursor();
-            if (cursor >= length && (this.window == null || !this.completingSuggestions)) {
-                this.pendingSuggestions = commandDispatcher.getCompletionSuggestions(this.parse, cursor);
+            final int cursor = this.input.getCursorPosition();
+            if (cursor >= length && (this.suggestions == null || !this.keepSuggestions)) {
+                this.pendingSuggestions = commandDispatcher.getCompletionSuggestions(this.currentParse, cursor);
                 this.pendingSuggestions.thenRun(() -> {
-                    if (this.pendingSuggestions.isDone()) this.showCommandSuggestions();
+                    if (this.pendingSuggestions.isDone()) this.showSuggestions(false);
                 });
             }
             info.cancel();

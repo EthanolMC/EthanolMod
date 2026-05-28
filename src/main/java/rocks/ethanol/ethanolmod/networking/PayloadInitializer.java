@@ -15,18 +15,18 @@ import rocks.ethanol.ethanolmod.networking.impl.shared.SharedInitPayload;
 public class PayloadInitializer {
 
     public static void init() {
-        PayloadTypeRegistry.playC2S().register(SharedInitPayload.ID, SharedInitPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(ServerboundCommandPayload.ID, ServerboundCommandPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(ServerboundRequestSuggestionsPayload.ID, ServerboundRequestSuggestionsPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(ServerboundAuthInitPacket.ID, ServerboundAuthInitPacket.CODEC);
-        PayloadTypeRegistry.playC2S().register(ServerboundAuthResponsePacket.ID, ServerboundAuthResponsePacket.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(SharedInitPayload.ID, SharedInitPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundCommandPayload.ID, ServerboundCommandPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundRequestSuggestionsPayload.ID, ServerboundRequestSuggestionsPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundAuthInitPacket.ID, ServerboundAuthInitPacket.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(ServerboundAuthResponsePacket.ID, ServerboundAuthResponsePacket.CODEC);
 
-        PayloadTypeRegistry.playS2C().register(SharedInitPayload.ID, SharedInitPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundVanishPayload.ID, ClientboundVanishPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundMessagePayload.ID, ClientboundMessagePayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundCommandTreePayload.ID, ClientboundCommandTreePayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundSuggestionsResponsePayload.ID, ClientboundSuggestionsResponsePayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(ClientboundAuthDataPayload.ID, ClientboundAuthDataPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(SharedInitPayload.ID, SharedInitPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundVanishPayload.ID, ClientboundVanishPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundMessagePayload.ID, ClientboundMessagePayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundCommandTreePayload.ID, ClientboundCommandTreePayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundSuggestionsResponsePayload.ID, ClientboundSuggestionsResponsePayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ClientboundAuthDataPayload.ID, ClientboundAuthDataPayload.CODEC);
     }
 
 }

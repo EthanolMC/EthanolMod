@@ -3,7 +3,7 @@ package rocks.ethanol.ethanolmod.command.argumenttypes;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import rocks.ethanol.ethanolmod.EthanolMod;
 import rocks.ethanol.ethanolmod.networking.impl.serverbound.ServerboundRequestSuggestionsPayload;
 import rocks.ethanol.ethanolmod.structure.MinecraftWrapper;
@@ -39,7 +39,9 @@ public interface ArgumentTypes extends MinecraftWrapper {
         final EthanolMod ethanolMod = EthanolMod.getInstance();
         ethanolMod.getPendingRequests().put(nonce, future);
         final int partialCommandOffset = ethanolMod.getConfiguration().getCommandPrefix().length();
-        mc.getNetworkHandler().sendPacket(new CustomPayloadC2SPacket(new ServerboundRequestSuggestionsPayload(nonce, partialCommandOffset, builder.getInput())));
+        if (mc.getConnection() != null) {
+            mc.getConnection().send(new ServerboundCustomPayloadPacket(new ServerboundRequestSuggestionsPayload(nonce, partialCommandOffset, builder.getInput())));
+        }
         return future;
     }
 

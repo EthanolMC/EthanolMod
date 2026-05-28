@@ -11,7 +11,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.ints.IntSets;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import net.minecraft.command.CommandSource;
+import net.minecraft.commands.SharedSuggestionProvider;
 import rocks.ethanol.ethanolmod.command.argumenttypes.ArgumentTypeRegistry;
 
 import java.nio.charset.StandardCharsets;
@@ -22,12 +22,12 @@ import java.util.function.Function;
 
 public class CommandTreeReader {
 
-    public static RootCommandNode<CommandSource> read(final ByteBuf in, final ArgumentTypeRegistry argumentTypeRegistry) {
+    public static RootCommandNode<SharedSuggestionProvider> read(final ByteBuf in, final ArgumentTypeRegistry argumentTypeRegistry) {
         final List<CommandTreeReader.CommandNodeData> nodes = CommandTreeReader.readList(in, buf2 -> CommandTreeReader.readCommandNode(argumentTypeRegistry, in));
         final int rootSize = in.readInt();
         CommandTreeReader.validate(nodes);
 
-        return (RootCommandNode<CommandSource>) new CommandTreeReader.CommandTree(argumentTypeRegistry, nodes).getNode(rootSize);
+        return (RootCommandNode<SharedSuggestionProvider>) new CommandTreeReader.CommandTree(argumentTypeRegistry, nodes).getNode(rootSize);
     }
 
     private static void validate(final List<CommandTreeReader.CommandNodeData> nodeData, final BiPredicate<CommandTreeReader.CommandNodeData, IntSet> validator) {
@@ -105,7 +105,7 @@ public class CommandTreeReader {
         }
 
         @Override
-        public ArgumentBuilder<CommandSource, ?> createArgumentBuilder(final ArgumentTypeRegistry argumentTypeRegistry) {
+        public ArgumentBuilder<SharedSuggestionProvider, ?> createArgumentBuilder(final ArgumentTypeRegistry argumentTypeRegistry) {
             return RequiredArgumentBuilder.argument(this.name, this.properties.createType());
         }
 
@@ -168,27 +168,27 @@ public class CommandTreeReader {
 
         private final ArgumentTypeRegistry argumentTypeRegistry;
         private final List<CommandTreeReader.CommandNodeData> nodeData;
-        private final List<CommandNode<CommandSource>> nodes;
+        private final List<CommandNode<SharedSuggestionProvider>> nodes;
 
         CommandTree(final ArgumentTypeRegistry argumentTypeRegistry, final List<CommandTreeReader.CommandNodeData> nodeData) {
             this.argumentTypeRegistry = argumentTypeRegistry;
             this.nodeData = nodeData;
-            ObjectArrayList<CommandNode<CommandSource>> objectArrayList = new ObjectArrayList<>();
+            ObjectArrayList<CommandNode<SharedSuggestionProvider>> objectArrayList = new ObjectArrayList<>();
             objectArrayList.size(nodeData.size());
             this.nodes = objectArrayList;
         }
 
-        public CommandNode<CommandSource> getNode(final int index) {
-            final CommandNode<CommandSource> commandNode = this.nodes.get(index);
+        public CommandNode<SharedSuggestionProvider> getNode(final int index) {
+            final CommandNode<SharedSuggestionProvider> commandNode = this.nodes.get(index);
             if (commandNode != null) {
                 return commandNode;
             } else {
                 final CommandTreeReader.CommandNodeData commandNodeData = this.nodeData.get(index);
-                final CommandNode<CommandSource> commandNode2;
+                final CommandNode<SharedSuggestionProvider> commandNode2;
                 if (commandNodeData.suggestableNode == null) {
                     commandNode2 = new RootCommandNode<>();
                 } else {
-                    ArgumentBuilder<CommandSource, ?> argumentBuilder = commandNodeData.suggestableNode.createArgumentBuilder(this.argumentTypeRegistry);
+                    ArgumentBuilder<SharedSuggestionProvider, ?> argumentBuilder = commandNodeData.suggestableNode.createArgumentBuilder(this.argumentTypeRegistry);
                     if ((commandNodeData.flags & 8) != 0) {
                         argumentBuilder.redirect(this.getNode(commandNodeData.redirectNodeIndex));
                     }
@@ -203,7 +203,7 @@ public class CommandTreeReader {
                 this.nodes.set(index, commandNode2);
 
                 for (int i : commandNodeData.childNodeIndices) {
-                    final CommandNode<CommandSource> commandNode3 = this.getNode(i);
+                    final CommandNode<SharedSuggestionProvider> commandNode3 = this.getNode(i);
                     if (!(commandNode3 instanceof RootCommandNode)) {
                         commandNode2.addChild(commandNode3);
                     }
@@ -224,7 +224,7 @@ public class CommandTreeReader {
         }
 
         @Override
-        public ArgumentBuilder<CommandSource, ?> createArgumentBuilder(final ArgumentTypeRegistry argumentTypeRegistry) {
+        public ArgumentBuilder<SharedSuggestionProvider, ?> createArgumentBuilder(final ArgumentTypeRegistry argumentTypeRegistry) {
             return LiteralArgumentBuilder.literal(this.literal);
         }
 
@@ -237,7 +237,7 @@ public class CommandTreeReader {
 
     interface SuggestableNode {
 
-        ArgumentBuilder<CommandSource, ?> createArgumentBuilder(final ArgumentTypeRegistry argumentTypeRegistry);
+        ArgumentBuilder<SharedSuggestionProvider, ?> createArgumentBuilder(final ArgumentTypeRegistry argumentTypeRegistry);
 
         void write(ByteBuf buf);
 
